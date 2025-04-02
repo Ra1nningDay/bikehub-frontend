@@ -13,7 +13,10 @@ import {
   CreditCard,
   CheckCircle,
 } from "lucide-react";
-import { useLocations, useCreateBooking } from "@/hooks/use-motorcycles";
+import {
+  useLocations,
+  useCreateBooking,
+} from "@/hooks/mototcycles/use-motorcycles";
 import { bookingDetailsSchema, personalInfoSchema } from "@/lib/schemas";
 import type { BookingFormData } from "@/types";
 import { z } from "zod";
