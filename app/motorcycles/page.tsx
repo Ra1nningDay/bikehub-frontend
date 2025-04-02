@@ -5,79 +5,11 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Filter, ChevronDown } from "lucide-react";
-
-// Sample motorcycle data
-const motorcycles = [
-  {
-    id: 1,
-    name: "Honda ADV 160 Red",
-    brand: "Honda",
-    category: "Adventure",
-    price: 25,
-    image:
-      "https://www.thaihonda.co.th/honda/uploads/cache/685/photos/shares/NewADV160-2022/2023/ADV160-Blue-W685xH426.png",
-    rating: 4.5,
-    reviews: 28,
-  },
-  {
-    id: 2,
-    name: "Honda ADV 160 Green",
-    brand: "Honda",
-    category: "Adventure",
-    price: 25,
-    image:
-      "https://www.thaihonda.co.th/honda/uploads/cache/685/photos/shares/ADV160_2024/Car_Color_-_Car_Color_image_Green.png",
-    rating: 4.3,
-    reviews: 19,
-  },
-  {
-    id: 3,
-    name: "Honda PCX 160",
-    brand: "Honda",
-    category: "Scooter",
-    price: 22,
-    image:
-      "https://www.thaihonda.co.th/honda/uploads/cache/685/photos/shares/24_PCX160/Color/Color_Chart_W685xH426_PX_Grey.jpg",
-    rating: 4.7,
-    reviews: 42,
-  },
-  {
-    id: 4,
-    name: "Yamaha NMAX 155",
-    brand: "Yamaha",
-    category: "Scooter",
-    price: 22,
-    image:
-      "https://storagetym.blob.core.windows.net/www2021/images/product-2021/commuter/model-year-2023/nmax-connected-2023/lineup-360-prestige-grey/2.png?sfvrsn=d4a7d019_2",
-    rating: 4.6,
-    reviews: 35,
-  },
-  {
-    id: 5,
-    name: "Kawasaki Ninja 400",
-    brand: "Kawasaki",
-    category: "Sport",
-    price: 35,
-    image:
-      "https://www.kawasaki.co.th/uploads/products/ninja400/ninja400-gy2-02.jpg",
-    rating: 4.8,
-    reviews: 31,
-  },
-  {
-    id: 6,
-    name: "Yamaha MT-03",
-    brand: "Yamaha",
-    category: "Naked",
-    price: 30,
-    image:
-      "https://storagetym.blob.core.windows.net/www2021/images/product-2021/commuter/model-year-2022/mt-03-2022/lineup-360-black/0.png?sfvrsn=6305e057_4",
-    rating: 4.4,
-    reviews: 23,
-  },
-];
+import { useMotorcycles } from "@/hooks/mototcycles/use-motorcycles";
+import type { FilterState } from "@/types";
 
 export default function MotorcyclesPage() {
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterState>({
     brand: "",
     category: "",
     priceRange: "",
@@ -85,36 +17,20 @@ export default function MotorcyclesPage() {
 
   const [showFilters, setShowFilters] = useState(false);
 
+  const {
+    motorcycles: filteredMotorcycles,
+    isLoading,
+    error,
+    brands,
+    categories,
+  } = useMotorcycles(filters);
+
   const handleFilterChange = (filterType: string, value: string) => {
     setFilters({
       ...filters,
       [filterType]: value,
     });
   };
-
-  const filteredMotorcycles = motorcycles.filter((motorcycle) => {
-    let matches = true;
-
-    if (filters.brand && motorcycle.brand !== filters.brand) {
-      matches = false;
-    }
-
-    if (filters.category && motorcycle.category !== filters.category) {
-      matches = false;
-    }
-
-    if (filters.priceRange) {
-      const [min, max] = filters.priceRange.split("-").map(Number);
-      if (motorcycle.price < min || motorcycle.price > max) {
-        matches = false;
-      }
-    }
-
-    return matches;
-  });
-
-  const brands = Array.from(new Set(motorcycles.map((m) => m.brand)));
-  const categories = Array.from(new Set(motorcycles.map((m) => m.category)));
 
   return (
     <>
@@ -294,87 +210,124 @@ export default function MotorcyclesPage() {
 
             {/* Motorcycle Listings */}
             <div className="md:w-3/4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredMotorcycles.map((motorcycle, index) => (
-                  <motion.div
-                    key={motorcycle.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="bg-white rounded-lg shadow-md overflow-hidden"
-                  >
-                    <div className="relative h-48">
-                      <Image
-                        src={motorcycle.image || "/placeholder.svg"}
-                        alt={motorcycle.name}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                        {motorcycle.category}
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold mb-1">
-                        {motorcycle.name}
-                      </h3>
-                      <div className="flex items-center mb-2">
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              xmlns="http://www.w3.org/2000/svg"
-                              className={`h-4 w-4 ${
-                                i < Math.floor(motorcycle.rating)
-                                  ? "fill-current"
-                                  : "stroke-current fill-none"
-                              }`}
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                              />
-                            </svg>
-                          ))}
-                        </div>
-                        <span className="text-gray-500 text-sm ml-1">
-                          ({motorcycle.reviews} reviews)
-                        </span>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-600 mb-4">
-                        ${motorcycle.price}
-                        <span className="text-sm text-gray-500 font-normal">
-                          /day
-                        </span>
-                      </p>
-                      <Link
-                        href="/booking"
-                        className="bg-orange-500 hover:bg-orange-600 text-white w-full py-2 rounded font-medium transition-colors block text-center"
-                      >
-                        Rent Now
-                      </Link>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {filteredMotorcycles.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">
-                    No motorcycles found matching your filters.
-                  </p>
-                  <button
-                    onClick={() =>
-                      setFilters({ brand: "", category: "", priceRange: "" })
-                    }
-                    className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Clear all filters
-                  </button>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
                 </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <p className="text-red-500 text-lg">
+                    Error loading motorcycles. Please try again later.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredMotorcycles.map((motorcycle, index) => (
+                      <motion.div
+                        key={motorcycle.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        className="bg-white rounded-lg shadow-md overflow-hidden"
+                      >
+                        <div className="relative h-48">
+                          <Image
+                            src={motorcycle.image || "/placeholder.svg"}
+                            alt={motorcycle.name}
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                            {motorcycle.category}
+                          </div>
+                          {!motorcycle.available && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                              <span className="bg-red-500 text-white px-3 py-1 rounded-md font-medium">
+                                Not Available
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold mb-1">
+                            {motorcycle.name}
+                          </h3>
+                          <div className="flex items-center mb-2">
+                            <div className="flex text-yellow-400">
+                              {[...Array(5)].map((_, i) => (
+                                <svg
+                                  key={i}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className={`h-4 w-4 ${
+                                    i < Math.floor(motorcycle.rating)
+                                      ? "fill-current"
+                                      : "stroke-current fill-none"
+                                  }`}
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                                  />
+                                </svg>
+                              ))}
+                            </div>
+                            <span className="text-gray-500 text-sm ml-1">
+                              ({motorcycle.reviews} reviews)
+                            </span>
+                          </div>
+                          <p className="text-gray-600 text-sm mb-3">
+                            {motorcycle.description}
+                          </p>
+                          <p className="text-2xl font-bold text-blue-600 mb-4">
+                            ${motorcycle.price}
+                            <span className="text-sm text-gray-500 font-normal">
+                              /day
+                            </span>
+                          </p>
+                          <Link
+                            href={motorcycle.available ? "/booking" : "#"}
+                            className={`w-full py-2 rounded font-medium transition-colors block text-center ${
+                              motorcycle.available
+                                ? "bg-orange-500 hover:bg-orange-600 text-white"
+                                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }`}
+                            onClick={(e) =>
+                              !motorcycle.available && e.preventDefault()
+                            }
+                          >
+                            {motorcycle.available
+                              ? "Rent Now"
+                              : "Not Available"}
+                          </Link>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {filteredMotorcycles.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500 text-lg">
+                        No motorcycles found matching your filters.
+                      </p>
+                      <button
+                        onClick={() =>
+                          setFilters({
+                            brand: "",
+                            category: "",
+                            priceRange: "",
+                          })
+                        }
+                        className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        Clear all filters
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
