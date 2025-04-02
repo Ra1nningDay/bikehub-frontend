@@ -6,7 +6,7 @@ import {
   getMotorcycleById,
   createBooking,
   getLocations,
-} from "@/lib/api";
+} from "@/lib/api/motorcycles";
 import type { FilterState } from "@/types";
 
 export function useMotorcycles(filters?: FilterState) {
