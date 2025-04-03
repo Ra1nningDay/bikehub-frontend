@@ -1,8 +1,6 @@
-"use client";
-
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/auth/use-auth";
@@ -10,16 +8,23 @@ import type { LoginFormData } from "@/lib/schemas";
 
 interface SignInFormProps {
   onToggleMode: () => void;
+  onClose: () => void;
 }
 
-export default function SignInForm({ onToggleMode }: SignInFormProps) {
-  const { login, isLoading, error, validationErrors, clearError } = useAuth();
+export default function SignInForm({ onToggleMode, onClose }: SignInFormProps) {
+  const { user, login, isLoading, error, validationErrors, clearError } =
+    useAuth();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
     rememberMe: false,
   });
+  useEffect(() => {
+    if (user) {
+      onClose();
+    }
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -37,6 +42,7 @@ export default function SignInForm({ onToggleMode }: SignInFormProps) {
     const success = await login(formData);
 
     if (success) {
+      onClose();
       // Reset form on success
       setFormData({
         email: "",

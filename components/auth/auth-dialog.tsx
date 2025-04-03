@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
@@ -91,7 +89,7 @@ export default function AuthDialog({
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <SignInForm onToggleMode={toggleMode} />
+                    <SignInForm onToggleMode={toggleMode} onClose={onClose} />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -101,7 +99,7 @@ export default function AuthDialog({
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <SignUpForm onToggleMode={toggleMode} />
+                    <SignUpForm onToggleMode={toggleMode} onClose={onClose} />
                   </motion.div>
                 )}
               </AnimatePresence>

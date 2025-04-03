@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { User, Mail, Lock, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/auth/use-auth";
@@ -10,11 +10,18 @@ import type { RegisterFormData } from "@/lib/schemas";
 
 interface SignUpFormProps {
   onToggleMode: () => void;
+  onClose: () => void;
 }
 
-export default function SignUpForm({ onToggleMode }: SignUpFormProps) {
-  const { register, isLoading, error, validationErrors, clearError } =
+export default function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
+  const { user, register, isLoading, error, validationErrors, clearError } =
     useAuth();
+
+  useEffect(() => {
+    if (user) {
+      onClose();
+    }
+  }, [user]);
 
   const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
@@ -38,7 +45,7 @@ export default function SignUpForm({ onToggleMode }: SignUpFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const success = await register(formData);
-
+    console.log("Register response:", success);
     if (success) {
       // Reset form on success
       setFormData({

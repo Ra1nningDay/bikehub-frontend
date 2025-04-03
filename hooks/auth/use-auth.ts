@@ -55,7 +55,7 @@ export function useAuth() {
       // Validate form data
       registerSchema.parse(data);
       // Call store register
-      await storeRegister(data.name, data.email, data.password);
+      storeRegister(data.name, data.email, data.password);
     } catch (error) {
       if (error instanceof ZodError) {
         const errors: Record<string, string> = {};

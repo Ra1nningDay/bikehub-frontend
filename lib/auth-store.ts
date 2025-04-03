@@ -4,7 +4,7 @@ import axios from "axios";
 
 export type User = {
   id: string;
-  name: string;
+  username: string;
   email: string;
 };
 
@@ -32,21 +32,17 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         set({ isLoading: true, error: null });
         try {
-          // In a real app, this would be an API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // Mock successful login
-          if (email === "demo@example.com" && password === "password") {
-            const user = { id: "1", name: "Demo User", email };
-            set({
-              user,
-              token: "mock-jwt-token",
-              isAuthenticated: true,
-              isLoading: false,
-            });
-          } else {
-            throw new Error("Invalid email or password");
-          }
+          const res = await axios.post("http://localhost:3000/auth/login", {
+            email,
+            password,
+          });
+          const { user, token } = res.data;
+          set({
+            user,
+            token,
+            isAuthenticated: true,
+            isLoading: false,
+          });
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : "An error occurred",
@@ -63,7 +59,7 @@ export const useAuthStore = create<AuthState>()(
             email,
             password,
           });
-          if (res.status !== 200) {
+          if (res.status !== 201) {
             throw new Error(res.data.message || "Registration failed");
           }
 
