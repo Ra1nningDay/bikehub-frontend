@@ -3,10 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Settings } from "lucide-react";
 import Logo from "./logo";
-import AuthDialog from "./auth/auth-dialog";
+import AuthDialog from "@/components/auth/auth-dialog";
 import { useAuth } from "@/hooks/auth/use-auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +47,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white shadow-sm">
+      <header className="sticky  top-0 z-50 bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex-shrink-0">
@@ -69,21 +76,46 @@ export default function Navbar() {
               </Link>
 
               {isAuthenticated ? (
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium mr-2">
-                      {user?.name.charAt(0)}
-                    </div>
-                    <span className="font-medium">{user?.name}</span>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="text-gray-700 hover:text-red-600 font-medium transition-colors flex items-center"
-                  >
-                    <LogOut size={18} className="mr-1" />
-                    Logout
-                  </button>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center space-x-2 focus:outline-none">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium">
+                        {user?.name.charAt(0)}
+                      </div>
+                      <span className="text-gray-700 font-medium">
+                        {user?.name}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/profile"
+                        className="flex items-center cursor-pointer"
+                      >
+                        <User size={16} className="mr-2" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/settings"
+                        className="flex items-center cursor-pointer"
+                      >
+                        <Settings size={16} className="mr-2" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-red-600 focus:text-red-600 cursor-pointer"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <div className="flex items-center space-x-4">
                   <button
@@ -106,9 +138,43 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center space-x-4">
               {isAuthenticated ? (
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium">
-                  {user?.name.charAt(0)}
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="focus:outline-none">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium">
+                        {user?.name.charAt(0)}
+                      </div>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/profile"
+                        className="flex items-center cursor-pointer"
+                      >
+                        <User size={16} className="mr-2" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/settings"
+                        className="flex items-center cursor-pointer"
+                      >
+                        <Settings size={16} className="mr-2" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-red-600 focus:text-red-600 cursor-pointer"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <button
                   onClick={() => openAuthDialog("signin")}
@@ -162,6 +228,22 @@ export default function Navbar() {
                 <div className="flex items-center">
                   <span className="font-medium">{user?.name}</span>
                 </div>
+                <Link
+                  href="/profile"
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors inline-flex items-center"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <User size={18} className="mr-1" />
+                  Profile
+                </Link>
+                <Link
+                  href="/settings"
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors inline-flex items-center"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Settings size={18} className="mr-1" />
+                  Settings
+                </Link>
                 <button
                   onClick={() => {
                     handleLogout();

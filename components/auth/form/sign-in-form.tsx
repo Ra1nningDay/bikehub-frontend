@@ -20,12 +20,20 @@ export default function SignInForm({ onToggleMode, onClose }: SignInFormProps) {
     password: "",
     rememberMe: false,
   });
-  useEffect(() => {
-    if (user) {
-      onClose();
-    }
-  }, [user]);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
+  useEffect(() => {
+    if (user && !showSuccessAnimation) {
+      setShowSuccessAnimation(true);
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+
+      setTimeout(() => {
+        setShowSuccessAnimation(false);
+      }, 2000);
+    }
+  }, [user, showSuccessAnimation, onClose]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -42,7 +50,6 @@ export default function SignInForm({ onToggleMode, onClose }: SignInFormProps) {
     const success = await login(formData);
 
     if (success) {
-      onClose();
       // Reset form on success
       setFormData({
         email: "",
@@ -53,7 +60,23 @@ export default function SignInForm({ onToggleMode, onClose }: SignInFormProps) {
   };
 
   return (
-    <div>
+    <div className="relative">
+      {/* Overlay Animation เมื่อ login สำเร็จ */}
+      {showSuccessAnimation && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute inset-0 flex border-0 items-center h-full justify-center bg-white z-50"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full"
+          />
+        </motion.div>
+      )}
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Welcome back</h2>
 
       {error && (

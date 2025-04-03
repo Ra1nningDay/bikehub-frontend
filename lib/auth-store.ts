@@ -4,7 +4,7 @@ import axios from "axios";
 
 export type User = {
   id: string;
-  username: string;
+  name: string;
   email: string;
 };
 
@@ -36,6 +36,7 @@ export const useAuthStore = create<AuthState>()(
             email,
             password,
           });
+
           const { user, token } = res.data;
           set({
             user,

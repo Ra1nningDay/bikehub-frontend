@@ -17,11 +17,16 @@ export default function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
   const { user, register, isLoading, error, validationErrors, clearError } =
     useAuth();
 
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+
   useEffect(() => {
-    if (user) {
-      onClose();
+    if (user && !showSuccessAnimation) {
+      setShowSuccessAnimation(true);
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     }
-  }, [user]);
+  }, [user, showSuccessAnimation, onClose]);
 
   const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
@@ -59,7 +64,23 @@ export default function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
   };
 
   return (
-    <div>
+    <div className="relative">
+      {showSuccessAnimation && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute inset-0 flex border-0 items-center h-full justify-center bg-white z-50"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full"
+          />
+        </motion.div>
+      )}
+
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
         Create an account
       </h2>
