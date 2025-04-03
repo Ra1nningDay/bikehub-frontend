@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import axios from "axios";
 
 export type User = {
   id: string;
@@ -57,14 +58,20 @@ export const useAuthStore = create<AuthState>()(
       register: async (name, email, password) => {
         set({ isLoading: true, error: null });
         try {
-          // In a real app, this would be an API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const res = await axios.post("http://localhost:3000/auth/register", {
+            name,
+            email,
+            password,
+          });
+          if (res.status !== 200) {
+            throw new Error(res.data.message || "Registration failed");
+          }
 
-          // Mock successful registration
-          const user = { id: "1", name, email };
+          const { user, token } = res.data;
+
           set({
             user,
-            token: "mock-jwt-token",
+            token,
             isAuthenticated: true,
             isLoading: false,
           });
