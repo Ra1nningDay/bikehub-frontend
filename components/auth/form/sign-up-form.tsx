@@ -66,7 +66,7 @@ export default function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
     };
 
     const handleGoogleSignIn = () => {
-        window.location.href = "http://localhost:3000/auth/google";
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
     };
 
     return (
