@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
         set({ isLoading: true, error: null });
         try {
           const res = await axios.post<{ user: User; token: string }>(
-            "http://localhost:3000/auth/login",
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
             {
               email,
               password,
@@ -84,7 +84,7 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
             user: User;
             token: string;
             message?: string;
-          }>("http://localhost:3000/auth/register", {
+          }>(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
             name,
             email,
             password,
