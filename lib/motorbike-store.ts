@@ -8,7 +8,6 @@ import {
 import axios from "axios";
 import { Motorbike, MotorbikeBrand } from "@/types";
 
-// Base URL ของ API (ปรับตาม environment หรือ config)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 // Axios instance
@@ -19,7 +18,6 @@ const api = axios.create({
   },
 });
 
-// Types สำหรับ API response และ request
 interface CreateMotorbikeDto {
   brand_id: number;
   name: string;
@@ -32,7 +30,6 @@ interface UpdateMotorbikeDto {
   price?: number;
 }
 
-// Zustand store
 interface MotorbikeStore {
   searchMotorbike: string;
   searchBrand: string;
@@ -103,13 +100,12 @@ export const useDeleteMotorbike = () => {
   });
 };
 
-// สำหรับ Brands (สมมติว่า backend มี endpoints คล้ายกัน)
 export const useBrands = () => {
   const { searchBrand } = useMotorbikeStore();
   return useQuery<MotorbikeBrand[], Error>({
     queryKey: ["brands", searchBrand],
     queryFn: async () => {
-      const { data } = await api.get<MotorbikeBrand[]>("/brands"); // สมมติ endpoint
+      const { data } = await api.get<MotorbikeBrand[]>("/motorbike-brands"); // สมมติ endpoint
       return data.filter((brand) =>
         brand.name.toLowerCase().includes(searchBrand.toLowerCase()),
       );
@@ -121,7 +117,7 @@ export const useCreateBrand = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (brand: Omit<MotorbikeBrand, "id">) =>
-      api.post<MotorbikeBrand>("/brands", brand), // สมมติ endpoint
+      api.post<MotorbikeBrand>("/motorbike-brands", brand), // สมมติ endpoint
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
     },
@@ -132,7 +128,7 @@ export const useUpdateBrand = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<MotorbikeBrand> }) =>
-      api.put<MotorbikeBrand>(`/brands/${id}`, data), // สมมติ endpoint
+      api.put<MotorbikeBrand>(`/motorbike-brands/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
     },
@@ -142,15 +138,14 @@ export const useUpdateBrand = () => {
 export const useDeleteBrand = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => api.delete(`/brands/${id}`), // สมมติ endpoint
+    mutationFn: (id: number) => api.delete(`/motorbike-brands/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
-      queryClient.invalidateQueries({ queryKey: ["motorbikes"] }); // ลบ motorbikes ที่เกี่ยวข้อง
+      queryClient.invalidateQueries({ queryKey: ["motorbikes"] });
     },
   });
 };
 
-// ฟังก์ชันช่วยเหลือ
 export const getBrandName = (brands: MotorbikeBrand[], brandId: number) => {
   const brand = brands.find((b) => b.id === brandId);
   return brand ? brand.name : "Unknown";
