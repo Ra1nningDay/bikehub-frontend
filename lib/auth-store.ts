@@ -51,7 +51,7 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const res = await axios.post<{ user: User; token: string }>(
+          const res = await axios.post<{ access_token: string }>(
             `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
             {
               email,
@@ -59,10 +59,20 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
             },
           );
 
-          const { user, token } = res.data;
+          const { access_token } = res.data;
+
+          const resUser = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
+            {
+              headers: {
+                Authorization: `Bearer ${access_token}`,
+              },
+            },
+          );
+
           set({
-            user,
-            token,
+            user: resUser.data,
+            token: access_token,
             isAuthenticated: true,
             isLoading: false,
           });
