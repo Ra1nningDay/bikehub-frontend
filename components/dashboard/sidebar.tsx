@@ -17,7 +17,7 @@ export default function Sidebar() {
     <>
       <div className="flex h-14 items-center border-b px-4">
         <Link
-          href="/admin/dashboard"
+          href="/dashboard"
           className="flex items-center gap-2 font-semibold"
         >
           <span className="text-xl font-bold">
@@ -32,7 +32,7 @@ export default function Sidebar() {
       <div className="flex-1 overflow-auto py-2">
         <nav className="grid items-start px-2 text-sm font-medium">
           <Link
-            href="/admin/dashboard"
+            href="/dashboard"
             className="flex items-center gap-3 rounded-lg bg-accent px-3 py-2 text-accent-foreground transition-all"
           >
             <LayoutDashboard className="h-4 w-4" />
@@ -49,7 +49,7 @@ export default function Sidebar() {
             </Badge>
           </Link>
           <Link
-            href="/admin/motorcycles"
+            href="/dashboard/motorbikes"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
           >
             <Bike className="h-4 w-4" />

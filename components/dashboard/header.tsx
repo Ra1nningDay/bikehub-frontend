@@ -17,12 +17,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/auth/use-auth";
+import { useRouter } from "next/navigation";
 
 export default function Header({
   toggleSidebar,
 }: {
   toggleSidebar: () => void;
 }) {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
       <Button
@@ -58,7 +68,9 @@ export default function Header({
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
-                <AvatarFallback>AD</AvatarFallback>
+                <AvatarFallback>
+                  {user?.displayName?.charAt(0) ?? user?.name?.charAt(0)}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
@@ -74,9 +86,9 @@ export default function Header({
               <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span onClick={handleLogout}>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

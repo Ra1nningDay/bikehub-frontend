@@ -51,6 +51,7 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
           );
 
           const { access_token } = res.data;
+          document.cookie = `auth-token=${access_token}; path=/; max-age=3600`;
 
           const resUser = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
@@ -62,8 +63,10 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
           );
 
           const user = resUser.data;
-          const isAdmin = user.role?.includes("admin") || false;
+          const isAdmin = user.roles?.includes("admin") || false;
 
+          document.cookie = `auth-token=${access_token}; path=/; max-age=3600`;
+          document.cookie = `is-admin=${isAdmin ? "true" : "false"}; path=/; max-age=3600`;
           set({
             user,
             token: access_token,
@@ -107,6 +110,8 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
           const user = resUser.data;
           const isAdmin = user.role?.includes("admin") || false;
 
+          document.cookie = `auth-token=${access_token}; path=/; max-age=3600`;
+          document.cookie = `is-admin=${isAdmin ? "true" : "false"}; path=/; max-age=3600`;
           set({
             user,
             token: access_token,
@@ -123,6 +128,10 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
       },
 
       logout: () => {
+        document.cookie =
+          "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie =
+          "is-admin=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         set({
           user: null,
           token: null,
@@ -135,10 +144,13 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
       },
 
       setAuthStateFromProvider: (token: string, user: User) => {
+        const isAdmin = user.roles?.includes("admin") || false;
+
         set({
           token,
           user,
           isAuthenticated: true,
+          isAdmin,
           isLoading: false,
           error: null,
         });

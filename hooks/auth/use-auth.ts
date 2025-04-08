@@ -10,12 +10,15 @@ import {
 import type { User } from "@/lib/auth-store"; // หรือ "@/lib/auth-store"
 import { useState } from "react";
 import { ZodError } from "zod";
+import { useRouter } from "next/navigation";
 
 export function useAuth() {
+  const router = useRouter();
   const {
     user,
     token,
     isAuthenticated,
+    isAdmin,
     isLoading,
     error: storeError,
     login: storeLogin,
@@ -36,6 +39,13 @@ export function useAuth() {
       loginSchema.parse(data);
       // Call store login
       await storeLogin(data.email, data.password);
+      if (useAuthStore.getState().isAuthenticated) {
+        if (useAuthStore.getState().isAdmin) {
+          router.push("/dashboard");
+        } else {
+          router.push("/");
+        }
+      }
     } catch (error) {
       if (error instanceof ZodError) {
         const errors: Record<string, string> = {};
@@ -58,6 +68,13 @@ export function useAuth() {
       registerSchema.parse(data);
       // Call store register
       storeRegister(data.name, data.email, data.password);
+      if (useAuthStore.getState().isAuthenticated) {
+        if (useAuthStore.getState().isAdmin) {
+          router.push("/dashboard");
+        } else {
+          router.push("/");
+        }
+      }
     } catch (error) {
       if (error instanceof ZodError) {
         const errors: Record<string, string> = {};
@@ -81,16 +98,14 @@ export function useAuth() {
       if (!receivedToken || !receivedUser) {
         throw new Error("Missing token or user data from provider callback.");
       }
-      // เรียก Action ใน Store เพื่อตั้งค่า State โดยตรง
+
       setAuthStateFromProvider(receivedToken, receivedUser);
-      return true; // สำเร็จ
+      return true;
     } catch (error) {
       console.error("Error handling provider callback:", error);
-      // อาจจะ set error ใน store หรือปล่อยให้ component จัดการ
-      // clearError(); // หรือตั้ง error ใหม่
       useAuthStore.setState({
         error: "Failed to process provider login",
-      }); // ตั้ง error ใน store
+      });
       return false; // ล้มเหลว
     }
   };
@@ -99,6 +114,7 @@ export function useAuth() {
     user,
     token,
     isAuthenticated,
+    isAdmin,
     isLoading,
     error: storeError,
     validationErrors,
