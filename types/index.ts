@@ -31,7 +31,7 @@ export interface FilterState {
 export interface MotorbikeBrand {
   id: number;
   name: string;
-  description: string;
+  description?: string;
 }
 
 export interface Motorbike {

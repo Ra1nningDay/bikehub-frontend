@@ -55,7 +55,30 @@ export const personalInfoSchema = z.object({
   phone: z.string().min(10, "Please enter a valid phone number"),
 });
 
+// Motorbike Schemas
+export const motorbikeSchema = z.object({
+  brand_id: z.number().min(1, "Brand ID is required"),
+  name: z
+    .string()
+    .min(1, "Motorbike name is required")
+    .max(100, "Motorbike name must be less than 100 characters"),
+  price: z.number().min(0, "Price must be non-negative"),
+});
+
+export const brandSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Brand name is required")
+    .max(50, "Brand name must be less than 50 characters"),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional(),
+});
+
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type BookingDetailsFormData = z.infer<typeof bookingDetailsSchema>;
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
+export type MotorbikeSchema = z.infer<typeof motorbikeSchema>;
+export type BrandSchema = z.infer<typeof brandSchema>;

@@ -1,55 +1,71 @@
-import { useState } from "react";
-import { mockBrands, mockMotorbike } from "../../data/motorbikeMock";
+import {
+  useMotorbikeStore,
+  useMotorbikes,
+  useBrands,
+  useCreateMotorbike,
+  useUpdateMotorbike,
+  useDeleteMotorbike,
+  useCreateBrand,
+  useUpdateBrand,
+  useDeleteBrand,
+  getBrandName,
+} from "@/lib/motorbike-store";
 import { Motorbike, MotorbikeBrand } from "@/types";
+import { motorbikeSchema, brandSchema } from "@/lib/schemas";
 
 export function useMotorbikeManagement() {
-  const [brands, setBrands] = useState<MotorbikeBrand[]>(mockBrands);
-  const [motorbikes, setMotorbikes] = useState<Motorbike[]>(mockMotorbike);
-  const [searchBrand, setSearchBrand] = useState<string>("");
-  const [searchMotorbike, setSearchMotorbike] = useState<string>("");
+  const { searchMotorbike, searchBrand, setSearchMotorbike, setSearchBrand } =
+    useMotorbikeStore();
 
-  const filteredBrands = brands.filter((brand) =>
-    brand.name.toLowerCase().includes(searchBrand.toLowerCase()),
-  );
+  const { data: motorbikes = [], isLoading: motorbikesLoading } =
+    useMotorbikes();
+  const { data: brands = [], isLoading: brandsLoading } = useBrands();
+
+  const createMotorbikeMutation = useCreateMotorbike();
+  const updateMotorbikeMutation = useUpdateMotorbike();
+  const deleteMotorbikeMutation = useDeleteMotorbike();
+
+  const createBrandMutation = useCreateBrand();
+  const updateBrandMutation = useUpdateBrand();
+  const deleteBrandMutation = useDeleteBrand();
 
   const filteredMotorbikes = motorbikes.filter((motorbike) =>
     motorbike.name.toLowerCase().includes(searchMotorbike.toLowerCase()),
   );
 
-  const getBrandName = (brandId: number): string => {
-    const brand = brands.find((b) => b.id === brandId);
-    return brand ? brand.name : "Unknown";
-  };
-
-  const handleAddBrand = (brand: Omit<MotorbikeBrand, "id">) => {
-    const newId = Math.max(...brands.map((b) => b.id), 0) + 1;
-    setBrands([...brands, { ...brand, id: newId }]);
-  };
-
-  const handleEditBrand = (updatedBrand: MotorbikeBrand) => {
-    setBrands(brands.map((b) => (b.id === updatedBrand.id ? updatedBrand : b)));
-  };
-
-  const handleDeleteBrand = (brandId: number) => {
-    setBrands(brands.filter((b) => b.id !== brandId));
-    setMotorbikes(motorbikes.filter((m) => m.brand_id !== brandId));
-  };
+  const filteredBrands = brands.filter((brand) =>
+    brand.name.toLowerCase().includes(searchBrand.toLowerCase()),
+  );
 
   const handleAddMotorbike = (motorbike: Omit<Motorbike, "id">) => {
-    const newId = Math.max(...motorbikes.map((m) => m.id), 0) + 1;
-    setMotorbikes([...motorbikes, { ...motorbike, id: newId }]);
+    const validatedMotorbike = motorbikeSchema.parse(motorbike);
+    createMotorbikeMutation.mutate(validatedMotorbike);
   };
 
   const handleEditMotorbike = (updatedMotorbike: Motorbike) => {
-    setMotorbikes(
-      motorbikes.map((m) =>
-        m.id === updatedMotorbike.id ? updatedMotorbike : m,
-      ),
-    );
+    const validatedMotorbike = motorbikeSchema.parse(updatedMotorbike);
+    updateMotorbikeMutation.mutate({
+      id: updatedMotorbike.id,
+      data: validatedMotorbike,
+    });
   };
 
   const handleDeleteMotorbike = (motorbikeId: number) => {
-    setMotorbikes(motorbikes.filter((m) => m.id !== motorbikeId));
+    deleteMotorbikeMutation.mutate(motorbikeId);
+  };
+
+  const handleAddBrand = (brand: Omit<MotorbikeBrand, "id">) => {
+    const validatedBrand = brandSchema.parse(brand);
+    createBrandMutation.mutate(validatedBrand);
+  };
+
+  const handleEditBrand = (updatedBrand: MotorbikeBrand) => {
+    const validatedBrand = brandSchema.parse(updatedBrand);
+    updateBrandMutation.mutate({ id: updatedBrand.id, data: validatedBrand });
+  };
+
+  const handleDeleteBrand = (brandId: number) => {
+    deleteBrandMutation.mutate(brandId);
   };
 
   return {
@@ -61,12 +77,14 @@ export function useMotorbikeManagement() {
     setSearchMotorbike,
     filteredBrands,
     filteredMotorbikes,
-    getBrandName,
+    getBrandName: (brandId: number) => getBrandName(brands, brandId),
     handleAddBrand,
     handleEditBrand,
     handleDeleteBrand,
     handleAddMotorbike,
     handleEditMotorbike,
     handleDeleteMotorbike,
+    motorbikesLoading,
+    brandsLoading,
   };
 }

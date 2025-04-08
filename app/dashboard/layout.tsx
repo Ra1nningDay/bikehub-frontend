@@ -9,6 +9,9 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/dashboard/sidebar";
 import Header from "@/components/dashboard/header";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -44,7 +47,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         )}
       >
         <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">{children}</div>
+        <QueryClientProvider client={queryClient}>
+          <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">{children}</div>
+        </QueryClientProvider>
       </main>
     </div>
   );
