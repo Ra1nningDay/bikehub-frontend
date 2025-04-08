@@ -29,7 +29,7 @@ export const mockBrands = [
   },
 ];
 
-export const mockMotorBike = [
+export const mockMotorbike = [
   { id: 1, brand_id: 1, name: "CBR500R", price: 6799.0 },
   { id: 2, brand_id: 2, name: "MT-07", price: 7699.0 },
   { id: 3, brand_id: 3, name: "Z900", price: 8999.0 },

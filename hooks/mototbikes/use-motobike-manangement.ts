@@ -1,73 +1,72 @@
 import { useState } from "react";
-import { mockBrands, mockMotorBike } from "../../data/motorbikeMock";
+import { mockBrands, mockMotorbike } from "../../data/motorbikeMock";
+import { Motorbike, MotorbikeBrand } from "@/types";
 
 export function useMotorbikeManagement() {
-  const [brands, setBrands] = useState(mockBrands);
-  const [motorcycles, setMotorcycles] = useState(mockMotorBike);
-  const [searchBrand, setSearchBrand] = useState("");
-  const [searchMotorcycle, setSearchMotorcycle] = useState("");
+  const [brands, setBrands] = useState<MotorbikeBrand[]>(mockBrands);
+  const [motorbikes, setMotorbikes] = useState<Motorbike[]>(mockMotorbike);
+  const [searchBrand, setSearchBrand] = useState<string>("");
+  const [searchMotorbike, setSearchMotorbike] = useState<string>("");
 
   const filteredBrands = brands.filter((brand) =>
     brand.name.toLowerCase().includes(searchBrand.toLowerCase()),
   );
 
-  const filteredMotorcycles = motorcycles.filter((motorcycle) =>
-    motorcycle.name.toLowerCase().includes(searchMotorcycle.toLowerCase()),
+  const filteredMotorbikes = motorbikes.filter((motorbike) =>
+    motorbike.name.toLowerCase().includes(searchMotorbike.toLowerCase()),
   );
 
-  const getBrandName = (brandId: number) => {
+  const getBrandName = (brandId: number): string => {
     const brand = brands.find((b) => b.id === brandId);
     return brand ? brand.name : "Unknown";
   };
 
-  // CRUD operations for brands
-  const handleAddBrand = (brand) => {
+  const handleAddBrand = (brand: Omit<MotorbikeBrand, "id">) => {
     const newId = Math.max(...brands.map((b) => b.id), 0) + 1;
     setBrands([...brands, { ...brand, id: newId }]);
   };
 
-  const handleEditBrand = (updatedBrand) => {
+  const handleEditBrand = (updatedBrand: MotorbikeBrand) => {
     setBrands(brands.map((b) => (b.id === updatedBrand.id ? updatedBrand : b)));
   };
 
-  const handleDeleteBrand = (brandId) => {
+  const handleDeleteBrand = (brandId: number) => {
     setBrands(brands.filter((b) => b.id !== brandId));
-    setMotorcycles(motorcycles.filter((m) => m.brand_id !== brandId));
+    setMotorbikes(motorbikes.filter((m) => m.brand_id !== brandId));
   };
 
-  // CRUD operations for motorcycles
-  const handleAddMotorcycle = (motorcycle) => {
-    const newId = Math.max(...motorcycles.map((m) => m.id), 0) + 1;
-    setMotorcycles([...motorcycles, { ...motorcycle, id: newId }]);
+  const handleAddMotorbike = (motorbike: Omit<Motorbike, "id">) => {
+    const newId = Math.max(...motorbikes.map((m) => m.id), 0) + 1;
+    setMotorbikes([...motorbikes, { ...motorbike, id: newId }]);
   };
 
-  const handleEditMotorcycle = (updatedMotorcycle) => {
-    setMotorcycles(
-      motorcycles.map((m) =>
-        m.id === updatedMotorcycle.id ? updatedMotorcycle : m,
+  const handleEditMotorbike = (updatedMotorbike: Motorbike) => {
+    setMotorbikes(
+      motorbikes.map((m) =>
+        m.id === updatedMotorbike.id ? updatedMotorbike : m,
       ),
     );
   };
 
-  const handleDeleteMotorcycle = (motorcycleId) => {
-    setMotorcycles(motorcycles.filter((m) => m.id !== motorcycleId));
+  const handleDeleteMotorbike = (motorbikeId: number) => {
+    setMotorbikes(motorbikes.filter((m) => m.id !== motorbikeId));
   };
 
   return {
     brands,
-    motorcycles,
+    motorbikes,
     searchBrand,
     setSearchBrand,
-    searchMotorcycle,
-    setSearchMotorcycle,
+    searchMotorbike,
+    setSearchMotorbike,
     filteredBrands,
-    filteredMotorcycles,
+    filteredMotorbikes,
     getBrandName,
     handleAddBrand,
     handleEditBrand,
     handleDeleteBrand,
-    handleAddMotorcycle,
-    handleEditMotorcycle,
-    handleDeleteMotorcycle,
+    handleAddMotorbike,
+    handleEditMotorbike,
+    handleDeleteMotorbike,
   };
 }

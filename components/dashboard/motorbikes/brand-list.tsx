@@ -15,8 +15,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { BrandListProps } from "@/types";
 
-export function BrandList({ brands, motorcycles, onEdit, onDelete }) {
+export function BrandList({
+  brands,
+  motorbikes,
+  onEdit,
+  onDelete,
+}: BrandListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {brands.map((brand) => (
@@ -51,8 +57,8 @@ export function BrandList({ brands, motorcycles, onEdit, onDelete }) {
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
-              {motorcycles.filter((m) => m.brand_id === brand.id).length}{" "}
-              motorcycles
+              {motorbikes.filter((m) => m.brand_id === brand.id).length}{" "}
+              motorbikes
             </div>
           </CardFooter>
         </Card>

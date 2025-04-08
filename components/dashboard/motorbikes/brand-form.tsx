@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { BrandFormProps } from "@/types";
 
 export function BrandForm({
   open,
@@ -18,7 +19,7 @@ export function BrandForm({
   setForm,
   onSave,
   isEditing,
-}) {
+}: BrandFormProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>

@@ -16,8 +16,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MotorbikeBrand } from "@/types";
 
-export function MotorcycleForm({
+interface MotorbikeFormData {
+  id: number;
+  brand_id: number;
+  name: string;
+  price: string;
+}
+
+interface MotorbikeFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  form: MotorbikeFormData;
+  setForm: (form: MotorbikeFormData) => void;
+  onSave: () => void;
+  brands: MotorbikeBrand[];
+  isEditing: boolean;
+}
+
+export function MotorbikeForm({
   open,
   onOpenChange,
   form,
@@ -25,39 +43,39 @@ export function MotorcycleForm({
   onSave,
   brands,
   isEditing,
-}) {
+}: MotorbikeFormProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Edit Motorcycle" : "Add New Motorcycle"}
+            {isEditing ? "Edit Motorbike" : "Add New Motorbike"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Update the motorcycle details below."
-              : "Fill in the details to add a new motorcycle."}
+              ? "Update the motorbike details below."
+              : "Fill in the details to add a new motorbike."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="motorcycle-name">Motorcycle Name</Label>
+            <Label htmlFor="motorbike-name">Motorbike Name</Label>
             <Input
-              id="motorcycle-name"
+              id="motorbike-name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="e.g. CBR500R, MT-07"
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="motorcycle-brand">Brand</Label>
+            <Label htmlFor="motorbike-brand">Brand</Label>
             <Select
               value={form.brand_id.toString()}
               onValueChange={(value) =>
                 setForm({ ...form, brand_id: parseInt(value) })
               }
             >
-              <SelectTrigger id="motorcycle-brand">
+              <SelectTrigger id="motorbike-brand">
                 <SelectValue placeholder="Select a brand" />
               </SelectTrigger>
               <SelectContent>
@@ -70,9 +88,9 @@ export function MotorcycleForm({
             </Select>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="motorcycle-price">Price ($)</Label>
+            <Label htmlFor="motorbike-price">Price ($)</Label>
             <Input
-              id="motorcycle-price"
+              id="motorbike-price"
               type="number"
               min="0"
               step="0.01"

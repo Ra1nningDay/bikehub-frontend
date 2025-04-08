@@ -27,3 +27,39 @@ export interface FilterState {
   category: string;
   priceRange: string;
 }
+
+export interface MotorbikeBrand {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export interface Motorbike {
+  id: number;
+  brand_id: number;
+  name: string;
+  price: number;
+}
+
+export interface MotorbikeForm {
+  id: number;
+  brand_id: number;
+  name: string;
+  price: number;
+}
+
+export interface BrandListProps {
+  brands: MotorbikeBrand[];
+  motorbikes: Motorbike[];
+  onEdit: (brand: MotorbikeBrand) => void;
+  onDelete: (brandId: number) => void;
+}
+
+export interface BrandFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  form: MotorbikeBrand;
+  setForm: (form: MotorbikeBrand) => void;
+  onSave: () => void;
+  isEditing: boolean;
+}

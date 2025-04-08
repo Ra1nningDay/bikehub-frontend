@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Filter, ChevronDown } from "lucide-react";
-import { useMotorcycles } from "@/hooks/mototcycles/use-motorcycles";
+import { useMotorbikeManagement } from "@/hooks/motorbikes/use-motorbike-management";
 import type { FilterState } from "@/types";
 
-export default function MotorcyclesPage() {
+export default function MotorbikePage() {
   const [filters, setFilters] = useState<FilterState>({
     brand: "",
     category: "",
@@ -18,12 +18,12 @@ export default function MotorcyclesPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   const {
-    motorcycles: filteredMotorcycles,
+    motorbikes: filteredMotorbikes,
     isLoading,
     error,
     brands,
     categories,
-  } = useMotorcycles(filters);
+  } = useMotorbikeManagement(filters);
 
   const handleFilterChange = (filterType: string, value: string) => {
     setFilters({
@@ -43,11 +43,11 @@ export default function MotorcyclesPage() {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center">
-              Explore Our Motorcycles
+              Explore Our Motorbikes
             </h1>
             <p className="text-center max-w-2xl mx-auto">
-              Choose the motorcycle that suits your dream trip and start
-              enjoying the beauty of nature.
+              Choose the motorbike that suits your dream trip and start enjoying
+              the beauty of nature.
             </p>
           </motion.div>
         </div>
@@ -208,7 +208,7 @@ export default function MotorcyclesPage() {
               </div>
             </motion.div>
 
-            {/* Motorcycle Listings */}
+            {/* Motorbike Listings */}
             <div className="md:w-3/4">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
@@ -217,15 +217,15 @@ export default function MotorcyclesPage() {
               ) : error ? (
                 <div className="text-center py-12">
                   <p className="text-red-500 text-lg">
-                    Error loading motorcycles. Please try again later.
+                    Error loading motorbikes. Please try again later.
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredMotorcycles.map((motorcycle, index) => (
+                    {filteredMotorbikes.map((motorbike, index) => (
                       <motion.div
-                        key={motorcycle.id}
+                        key={motorbike.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -233,15 +233,15 @@ export default function MotorcyclesPage() {
                       >
                         <div className="relative h-48">
                           <Image
-                            src={motorcycle.image || "/placeholder.svg"}
-                            alt={motorcycle.name}
+                            src={motorbike.image || "/placeholder.svg"}
+                            alt={motorbike.name}
                             fill
                             className="object-cover"
                           />
                           <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                            {motorcycle.category}
+                            {motorbike.category}
                           </div>
-                          {!motorcycle.available && (
+                          {!motorbike.available && (
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                               <span className="bg-red-500 text-white px-3 py-1 rounded-md font-medium">
                                 Not Available
@@ -251,7 +251,7 @@ export default function MotorcyclesPage() {
                         </div>
                         <div className="p-4">
                           <h3 className="text-lg font-semibold mb-1">
-                            {motorcycle.name}
+                            {motorbike.name}
                           </h3>
                           <div className="flex items-center mb-2">
                             <div className="flex text-yellow-400">
@@ -260,7 +260,7 @@ export default function MotorcyclesPage() {
                                   key={i}
                                   xmlns="http://www.w3.org/2000/svg"
                                   className={`h-4 w-4 ${
-                                    i < Math.floor(motorcycle.rating)
+                                    i < Math.floor(motorbike.rating)
                                       ? "fill-current"
                                       : "stroke-current fill-none"
                                   }`}
@@ -276,42 +276,40 @@ export default function MotorcyclesPage() {
                               ))}
                             </div>
                             <span className="text-gray-500 text-sm ml-1">
-                              ({motorcycle.reviews} reviews)
+                              ({motorbike.reviews} reviews)
                             </span>
                           </div>
                           <p className="text-gray-600 text-sm mb-3">
-                            {motorcycle.description}
+                            {motorbike.description}
                           </p>
                           <p className="text-2xl font-bold text-blue-600 mb-4">
-                            ${motorcycle.price}
+                            ${motorbike.price}
                             <span className="text-sm text-gray-500 font-normal">
                               /day
                             </span>
                           </p>
                           <Link
-                            href={motorcycle.available ? "/booking" : "#"}
+                            href={motorbike.available ? "/booking" : "#"}
                             className={`w-full py-2 rounded font-medium transition-colors block text-center ${
-                              motorcycle.available
+                              motorbike.available
                                 ? "bg-orange-500 hover:bg-orange-600 text-white"
                                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
                             }`}
                             onClick={(e) =>
-                              !motorcycle.available && e.preventDefault()
+                              !motorbike.available && e.preventDefault()
                             }
                           >
-                            {motorcycle.available
-                              ? "Rent Now"
-                              : "Not Available"}
+                            {motorbike.available ? "Rent Now" : "Not Available"}
                           </Link>
                         </div>
                       </motion.div>
                     ))}
                   </div>
 
-                  {filteredMotorcycles.length === 0 && (
+                  {filteredMotorbikes.length === 0 && (
                     <div className="text-center py-12">
                       <p className="text-gray-500 text-lg">
-                        No motorcycles found matching your filters.
+                        No motorbikes found matching your filters.
                       </p>
                       <button
                         onClick={() =>

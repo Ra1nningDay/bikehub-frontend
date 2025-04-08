@@ -12,47 +12,56 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MotorcycleList } from "@/components/dashboard/motorbikes/motorbike-list";
+import { MotorbikeList } from "@/components/dashboard/motorbikes/motorbike-list";
 import { BrandList } from "@/components/dashboard/motorbikes/brand-list";
-import { MotorcycleForm } from "@/components/dashboard/motorbikes/motorbike-form";
+import { MotorbikeForm } from "@/components/dashboard/motorbikes/motorbike-form";
 import { BrandForm } from "@/components/dashboard/motorbikes/brand-form";
 import { useMotorbikeManagement } from "@/hooks/mototbikes/use-motobike-manangement";
+import { Motorbike, MotorbikeBrand } from "@/types";
 
-export default function MotorcyclesPage() {
+interface MotorbikeFormData {
+  id: number;
+  brand_id: number;
+  name: string;
+  price: string;
+}
+
+export default function MotorbikesPage() {
   const {
     brands,
-    motorcycles,
+    motorbikes,
     searchBrand,
     setSearchBrand,
-    searchMotorcycle,
-    setSearchMotorcycle,
+    searchMotorbike,
+    setSearchMotorbike,
     filteredBrands,
-    filteredMotorcycles,
+    filteredMotorbikes,
     getBrandName,
     handleAddBrand,
     handleEditBrand,
     handleDeleteBrand,
-    handleAddMotorcycle,
-    handleEditMotorcycle,
-    handleDeleteMotorcycle,
+    handleAddMotorbike,
+    handleEditMotorbike,
+    handleDeleteMotorbike,
   } = useMotorbikeManagement();
 
-  const [brandForm, setBrandForm] = useState({
+  const [brandForm, setBrandForm] = useState<MotorbikeBrand>({
     id: 0,
     name: "",
     description: "",
   });
-  const [isEditingBrand, setIsEditingBrand] = useState(false);
-  const [brandDialogOpen, setBrandDialogOpen] = useState(false);
+  const [isEditingBrand, setIsEditingBrand] = useState<boolean>(false);
+  const [brandDialogOpen, setBrandDialogOpen] = useState<boolean>(false);
 
-  const [motorcycleForm, setMotorcycleForm] = useState({
+  const [motorbikeForm, setMotorbikeForm] = useState<MotorbikeFormData>({
     id: 0,
     brand_id: brands[0]?.id || 0,
     name: "",
     price: "",
   });
-  const [isEditingMotorcycle, setIsEditingMotorcycle] = useState(false);
-  const [motorcycleDialogOpen, setMotorcycleDialogOpen] = useState(false);
+  const [isEditingMotorbike, setIsEditingMotorbike] = useState<boolean>(false); // เปลี่ยนจาก isEditingMotorcycle เป็น isEditingMotorbike
+  const [motorbikeDialogOpen, setMotorbikeDialogOpen] =
+    useState<boolean>(false); // เปลี่ยนจาก motorcycleDialogOpen เป็น motorbikeDialogOpen
 
   const onAddBrand = () => {
     setIsEditingBrand(false);
@@ -60,7 +69,7 @@ export default function MotorcyclesPage() {
     setBrandDialogOpen(true);
   };
 
-  const onEditBrand = (brand) => {
+  const onEditBrand = (brand: MotorbikeBrand) => {
     setIsEditingBrand(true);
     setBrandForm(brand);
     setBrandDialogOpen(true);
@@ -71,78 +80,79 @@ export default function MotorcyclesPage() {
     setBrandDialogOpen(false);
   };
 
-  const onAddMotorcycle = () => {
-    setIsEditingMotorcycle(false);
-    setMotorcycleForm({
+  const onAddMotorbike = () => {
+    // เปลี่ยนจาก onAddMotorcycle เป็น onAddMotorbike
+    setIsEditingMotorbike(false);
+    setMotorbikeForm({
       id: 0,
       brand_id: brands[0]?.id || 0,
       name: "",
       price: "",
     });
-    setMotorcycleDialogOpen(true);
+    setMotorbikeDialogOpen(true);
   };
 
-  const onEditMotorcycle = (motorcycle) => {
-    setIsEditingMotorcycle(true);
-    setMotorcycleForm({ ...motorcycle, price: motorcycle.price.toString() });
-    setMotorcycleDialogOpen(true);
+  const onEditMotorbike = (motorbike: Motorbike) => {
+    // เปลี่ยนจาก onEditMotorcycle เป็น onEditMotorbike
+    setIsEditingMotorbike(true);
+    setMotorbikeForm({ ...motorbike, price: motorbike.price.toString() });
+    setMotorbikeDialogOpen(true);
   };
 
-  const onSaveMotorcycle = () => {
-    const formattedMotorcycle = {
-      ...motorcycleForm,
-      price: parseFloat(motorcycleForm.price),
-      brand_id: Number(motorcycleForm.brand_id),
+  const onSaveMotorbike = () => {
+    // เปลี่ยนจาก onSaveMotorcycle เป็น onSaveMotorbike
+    const formattedMotorbike = {
+      ...motorbikeForm,
+      price: parseFloat(motorbikeForm.price),
+      brand_id: Number(motorbikeForm.brand_id),
     };
-    isEditingMotorcycle
-      ? handleEditMotorcycle(formattedMotorcycle)
-      : handleAddMotorcycle(formattedMotorcycle);
-    setMotorcycleDialogOpen(false);
+    isEditingMotorbike
+      ? handleEditMotorbike(formattedMotorbike)
+      : handleAddMotorbike(formattedMotorbike);
+    setMotorbikeDialogOpen(false);
   };
 
   return (
     <>
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">
-          Motorcycle Management
+          Motorbike Management
         </h2>
       </div>
 
-      <Tabs defaultValue="motorcycles" className="space-y-4">
+      <Tabs defaultValue="motorbikes" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="motorcycles">Motorcycles</TabsTrigger>
+          <TabsTrigger value="motorbikes">Motorbikes</TabsTrigger>
           <TabsTrigger value="brands">Brands</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="motorcycles" className="space-y-4">
+        <TabsContent value="motorbikes" className="space-y-4">
           <div className="flex justify-between items-center">
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search motorcycles..."
+                placeholder="Search motorbikes..."
                 className="pl-8"
-                value={searchMotorcycle}
-                onChange={(e) => setSearchMotorcycle(e.target.value)}
+                value={searchMotorbike}
+                onChange={(e) => setSearchMotorbike(e.target.value)}
               />
             </div>
-            <Button onClick={onAddMotorcycle}>
-              <Plus className="mr-2 h-4 w-4" /> Add Motorcycle
+            <Button onClick={onAddMotorbike}>
+              <Plus className="mr-2 h-4 w-4" /> Add Motorbike
             </Button>
           </div>
           <Card>
             <CardHeader>
-              <CardTitle>Motorcycles</CardTitle>
-              <CardDescription>
-                Manage your motorcycle inventory
-              </CardDescription>
+              <CardTitle>Motorbikes</CardTitle>
+              <CardDescription>Manage your motorbike inventory</CardDescription>
             </CardHeader>
             <CardContent>
-              <MotorcycleList
-                motorcycles={filteredMotorcycles}
+              <MotorbikeList
+                motorbikes={filteredMotorbikes}
                 getBrandName={getBrandName}
-                onEdit={onEditMotorcycle}
-                onDelete={handleDeleteMotorcycle}
+                onEdit={onEditMotorbike}
+                onDelete={handleDeleteMotorbike}
               />
             </CardContent>
           </Card>
@@ -166,7 +176,7 @@ export default function MotorcyclesPage() {
           </div>
           <BrandList
             brands={filteredBrands}
-            motorcycles={motorcycles}
+            motorbikes={motorbikes}
             onEdit={onEditBrand}
             onDelete={handleDeleteBrand}
           />
@@ -182,14 +192,14 @@ export default function MotorcyclesPage() {
         isEditing={isEditingBrand}
       />
 
-      <MotorcycleForm
-        open={motorcycleDialogOpen}
-        onOpenChange={setMotorcycleDialogOpen}
-        form={motorcycleForm}
-        setForm={setMotorcycleForm}
-        onSave={onSaveMotorcycle}
+      <MotorbikeForm
+        open={motorbikeDialogOpen}
+        onOpenChange={setMotorbikeDialogOpen}
+        form={motorbikeForm}
+        setForm={setMotorbikeForm}
+        onSave={onSaveMotorbike}
         brands={brands}
-        isEditing={isEditingMotorcycle}
+        isEditing={isEditingMotorbike}
       />
     </>
   );

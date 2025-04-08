@@ -8,13 +8,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Motorbike } from "@/types";
 
-export function MotorcycleList({
-  motorcycles,
+interface MotorbikeListProps {
+  motorbikes: Motorbike[];
+  getBrandName: (brandId: number) => string;
+  onEdit: (motorbike: Motorbike) => void;
+  onDelete: (motorbikeId: number) => void;
+}
+
+export function MotorbikeList({
+  motorbikes,
   getBrandName,
   onEdit,
   onDelete,
-}) {
+}: MotorbikeListProps) {
   return (
     <div className="rounded-md border">
       <table className="w-full caption-bottom text-sm">
@@ -28,17 +36,17 @@ export function MotorcycleList({
           </tr>
         </thead>
         <tbody>
-          {motorcycles.map((motorcycle) => (
+          {motorbikes.map((motorbike) => (
             <tr
-              key={motorcycle.id}
+              key={motorbike.id}
               className="border-b transition-colors hover:bg-muted/50"
             >
-              <td className="p-4">{motorcycle.id}</td>
-              <td className="p-4 font-medium">{motorcycle.name}</td>
-              <td className="p-4">{getBrandName(motorcycle.brand_id)}</td>
+              <td className="p-4">{motorbike.id}</td>
+              <td className="p-4 font-medium">{motorbike.name}</td>
+              <td className="p-4">{getBrandName(motorbike.brand_id)}</td>
               <td className="p-4">
                 $
-                {motorcycle.price.toLocaleString(undefined, {
+                {motorbike.price.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                 })}
               </td>
@@ -51,13 +59,13 @@ export function MotorcycleList({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => onEdit(motorcycle)}>
+                    <DropdownMenuItem onClick={() => onEdit(motorbike)}>
                       <Edit className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="text-red-600"
-                      onClick={() => onDelete(motorcycle.id)}
+                      onClick={() => onDelete(motorbike.id)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" /> Delete
                     </DropdownMenuItem>
@@ -66,10 +74,10 @@ export function MotorcycleList({
               </td>
             </tr>
           ))}
-          {motorcycles.length === 0 && (
+          {motorbikes.length === 0 && (
             <tr>
               <td colSpan={5} className="p-4 text-center text-muted-foreground">
-                No motorcycles found
+                No motorbikes found
               </td>
             </tr>
           )}
