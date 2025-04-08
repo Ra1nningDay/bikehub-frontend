@@ -9,18 +9,7 @@ export type User = {
   avatar?: string;
   displayName?: string;
   provider?: "email" | "google";
-};
-
-type AuthState = {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-  clearError: () => void;
+  roles: string[];
 };
 
 interface AuthStateActions {
@@ -34,6 +23,7 @@ interface AuthStateActions {
 interface AuthStateData {
   user: User | null;
   token: string | null;
+  isAdmin: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -44,6 +34,7 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
     (set) => ({
       user: null,
       token: null,
+      isAdmin: false,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -70,10 +61,14 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
             },
           );
 
+          const user = resUser.data;
+          const isAdmin = user.role?.includes("admin") || false;
+
           set({
-            user: resUser.data,
+            user,
             token: access_token,
             isAuthenticated: true,
+            isAdmin,
             isLoading: false,
           });
         } catch (error: any) {
@@ -91,24 +86,32 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
         set({ isLoading: true, error: null });
         try {
           const res = await axios.post<{
-            user: User;
-            token: string;
-            message?: string;
+            access_token: string;
           }>(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
             name,
             email,
             password,
           });
-          if (res.status !== 201) {
-            throw new Error(res.data.message || "Registration failed");
-          }
 
-          const { user, token } = res.data;
+          const { access_token } = res.data;
+
+          const resUser = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
+            {
+              headers: {
+                Authorization: `Bearer ${access_token}`,
+              },
+            },
+          );
+
+          const user = resUser.data;
+          const isAdmin = user.role?.includes("admin") || false;
 
           set({
             user,
-            token,
+            token: access_token,
             isAuthenticated: true,
+            isAdmin,
             isLoading: false,
           });
         } catch (error: any) {
@@ -136,10 +139,9 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
           token,
           user,
           isAuthenticated: true,
-          isLoading: false, // ตั้งค่า isLoading เป็น false เมื่อสำเร็จ
+          isLoading: false,
           error: null,
         });
-        // console.log("Auth state set from provider:", { token, user });
       },
     }),
     {
@@ -148,6 +150,7 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
+        isAdmin: state.isAdmin,
       }),
     },
   ),
