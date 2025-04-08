@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { usePathname } from "next/navigation"; // เพิ่ม import นี้
 import { Badge } from "@/components/ui/badge";
 import {
   BarChart3,
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 
 export default function Sidebar() {
+  const pathname = usePathname(); // ดึง URL ปัจจุบัน
+
   return (
     <>
       <div className="flex h-14 items-center border-b px-4">
@@ -33,14 +36,22 @@ export default function Sidebar() {
         <nav className="grid items-start px-2 text-sm font-medium">
           <Link
             href="/dashboard"
-            className="flex items-center gap-3 rounded-lg bg-accent px-3 py-2 text-accent-foreground transition-all"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/dashboard"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </Link>
           <Link
             href="/admin/bookings"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/admin/bookings"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <Calendar className="h-4 w-4" />
             Bookings
@@ -50,28 +61,44 @@ export default function Sidebar() {
           </Link>
           <Link
             href="/dashboard/motorbikes"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/dashboard/motorbikes"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <Bike className="h-4 w-4" />
             Motorcycles
           </Link>
           <Link
             href="/admin/customers"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/admin/customers"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <Users className="h-4 w-4" />
             Customers
           </Link>
           <Link
             href="/admin/reports"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/admin/reports"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <BarChart3 className="h-4 w-4" />
             Reports
           </Link>
           <Link
             href="/admin/messages"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/admin/messages"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <MessageSquare className="h-4 w-4" />
             Messages
@@ -85,21 +112,33 @@ export default function Sidebar() {
         <nav className="grid items-start gap-2 text-sm font-medium">
           <Link
             href="/admin/settings"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/admin/settings"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <Settings className="h-4 w-4" />
             Settings
           </Link>
           <Link
             href="/admin/help"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/admin/help"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <HelpCircle className="h-4 w-4" />
             Help & Documentation
           </Link>
           <Link
             href="/logout"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname === "/logout"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <LogOut className="h-4 w-4" />
             Logout
