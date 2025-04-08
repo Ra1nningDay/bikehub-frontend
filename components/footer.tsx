@@ -1,8 +1,17 @@
-import Link from "next/link"
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react"
-import Logo from "./logo"
+"use client";
+
+import Link from "next/link";
+import { Mail, Phone, MapPin } from "lucide-react";
+import Logo from "./logo";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/dashboard");
+
+  if (isDashboard) {
+    return null;
+  }
   return (
     <footer className="bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-12">
@@ -10,18 +19,28 @@ export default function Footer() {
           <div className="space-y-4">
             <Logo />
             <p className="text-gray-400 mt-2">
-              Your premier motorbike rental service. Explore the world on two wheels with comfort and style.
+              Your premier motorbike rental service. Explore the world on two
+              wheels with comfort and style.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+              <Link
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <Facebook size={20} />
                 <span className="sr-only">Facebook</span>
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+              <Link
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <Instagram size={20} />
                 <span className="sr-only">Instagram</span>
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+              <Link
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <Twitter size={20} />
                 <span className="sr-only">Twitter</span>
               </Link>
@@ -32,22 +51,34 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="/"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="/motorcycles" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="/motorcycles"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   Motorcycles
                 </Link>
               </li>
               <li>
-                <Link href="/booking" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="/booking"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   Booking
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   About Us
                 </Link>
               </li>
@@ -84,10 +115,11 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; {new Date().getFullYear()} BIKE HUB. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} BIKE HUB. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }
-
