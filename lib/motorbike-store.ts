@@ -1,152 +1,98 @@
-import { create } from "zustand";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-} from "@tanstack/react-query";
-import axios from "axios";
-import { Motorbike, MotorbikeBrand } from "@/types";
+// // store.ts
+// import create from "zustand";
+// import axios from "axios";
+// import { Motorbike } from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-// Axios instance
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+// interface MotorbikeStore {
+//     motorbikes: Motorbike[];
+//     loading: boolean;
+//     error: string | null;
+//     searchMotorbike: string;
+//     fetchMotorbikes: () => void;
+//     createMotorbike: (formData: FormData) => void;
+//     updateMotorbike: (id: number, formData: FormData) => void;
+//     deleteMotorbike: (id: number) => void;
+//     setSearchMotorbike: (search: string) => void;
+// }
 
-interface CreateMotorbikeDto {
-  brand_id: number;
-  name: string;
-  price: number;
-}
+// export const useMotorbikeStore = create<MotorbikeStore>((set) => ({
+//     motorbikes: [],
+//     loading: false,
+//     error: null,
+//     searchMotorbike: "",
+//     setSearchMotorbike: (search) => set({ searchMotorbike: search }),
 
-interface UpdateMotorbikeDto {
-  brand_id?: number;
-  name?: string;
-  price?: number;
-}
+//     // ฟังก์ชันดึงข้อมูลมอเตอร์ไซค์
+//     fetchMotorbikes: async () => {
+//         set({ loading: true });
+//         try {
+//             const { data } = await axios.get<Motorbike[]>(
+//                 `${API_URL}/motorbikes`
+//             );
+//             set({
+//                 motorbikes: data,
+//                 loading: false,
+//             });
+//         } catch (err) {
+//             set({ error: "Error fetching motorbikes", loading: false });
+//         }
+//     },
 
-interface MotorbikeStore {
-  searchMotorbike: string;
-  searchBrand: string;
-  setSearchMotorbike: (search: string) => void;
-  setSearchBrand: (search: string) => void;
-}
+//     // ฟังก์ชันสร้างมอเตอร์ไซค์ใหม่
+//     createMotorbike: async (formData: FormData) => {
+//         try {
+//             const { data } = await axios.post<Motorbike>(
+//                 `${API_URL}/motorbikes`,
+//                 formData,
+//                 {
+//                     headers: {
+//                         "Content-Type": "multipart/form-data",
+//                     },
+//                 }
+//             );
+//             set((state) => ({
+//                 motorbikes: [...state.motorbikes, data],
+//             }));
+//         } catch (error) {
+//             set({ error: "Error creating motorbike" });
+//         }
+//     },
 
-export const useMotorbikeStore = create<MotorbikeStore>((set) => ({
-  searchMotorbike: "",
-  searchBrand: "",
-  setSearchMotorbike: (search) => set({ searchMotorbike: search }),
-  setSearchBrand: (search) => set({ searchBrand: search }),
-}));
+//     // ฟังก์ชันอัปเดตมอเตอร์ไซค์
+//     updateMotorbike: async (id: number, formData: FormData) => {
+//         try {
+//             const { data } = await axios.put<Motorbike>(
+//                 `${API_URL}/motorbikes/${id}`,
+//                 formData,
+//                 {
+//                     headers: {
+//                         "Content-Type": "multipart/form-data",
+//                     },
+//                 }
+//             );
+//             set((state) => ({
+//                 motorbikes: state.motorbikes.map((motorbike) =>
+//                     motorbike.id === id ? data : motorbike
+//                 ),
+//             }));
+//         } catch (error) {
+//             set({ error: "Error updating motorbike" });
+//         }
+//     },
 
-// React Query hooks
-export const useMotorbikes = () => {
-  const { searchMotorbike } = useMotorbikeStore();
-  return useQuery<Motorbike[], Error>({
-    queryKey: ["motorbikes", searchMotorbike],
-    queryFn: async () => {
-      const { data } = await api.get<Motorbike[]>("/motorbikes");
-      return data.filter((motorbike) =>
-        motorbike.name.toLowerCase().includes(searchMotorbike.toLowerCase()),
-      );
-    },
-  });
-};
-
-export const useMotorbike = (id: number) => {
-  return useQuery<Motorbike, Error>({
-    queryKey: ["motorbike", id],
-    queryFn: async () => {
-      const { data } = await api.get<Motorbike>(`/motorbikes/${id}`);
-      return data;
-    },
-  });
-};
-
-export const useCreateMotorbike = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (motorbike: CreateMotorbikeDto) =>
-      api.post<Motorbike>("/motorbikes", motorbike),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["motorbikes"] });
-    },
-  });
-};
-
-export const useUpdateMotorbike = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateMotorbikeDto }) =>
-      api.put<Motorbike>(`/motorbikes/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["motorbikes"] });
-    },
-  });
-};
-
-export const useDeleteMotorbike = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) => api.delete(`/motorbikes/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["motorbikes"] });
-    },
-  });
-};
-
-export const useBrands = () => {
-  const { searchBrand } = useMotorbikeStore();
-  return useQuery<MotorbikeBrand[], Error>({
-    queryKey: ["brands", searchBrand],
-    queryFn: async () => {
-      const { data } = await api.get<MotorbikeBrand[]>("/motorbike-brands"); // สมมติ endpoint
-      return data.filter((brand) =>
-        brand.name.toLowerCase().includes(searchBrand.toLowerCase()),
-      );
-    },
-  });
-};
-
-export const useCreateBrand = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (brand: Omit<MotorbikeBrand, "id">) =>
-      api.post<MotorbikeBrand>("/motorbike-brands", brand), // สมมติ endpoint
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["brands"] });
-    },
-  });
-};
-
-export const useUpdateBrand = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<MotorbikeBrand> }) =>
-      api.put<MotorbikeBrand>(`/motorbike-brands/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["brands"] });
-    },
-  });
-};
-
-export const useDeleteBrand = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) => api.delete(`/motorbike-brands/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["brands"] });
-      queryClient.invalidateQueries({ queryKey: ["motorbikes"] });
-    },
-  });
-};
-
-export const getBrandName = (brands: MotorbikeBrand[], brandId: number) => {
-  const brand = brands.find((b) => b.id === brandId);
-  return brand ? brand.name : "Unknown";
-};
+//     // ฟังก์ชันลบมอเตอร์ไซค์
+//     deleteMotorbike: async (id: number) => {
+//         try {
+//             await axios.delete(`${API_URL}/motorbikes/${id}`);
+//             set((state) => ({
+//                 motorbikes: state.motorbikes.filter(
+//                     (motorbike) => motorbike.id !== id
+//                 ),
+//             }));
+//         } catch (error) {
+//             set({ error: "Error deleting motorbike" });
+//         }
+//     },
+// }));
