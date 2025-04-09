@@ -7,14 +7,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
-import { Motorbike } from "@/types";
+import { Edit, MoreHorizontal, Trash2, Eye } from "lucide-react";
+import { Motorbike, MotorbikeUnit } from "@/types";
 
 interface MotorbikeListProps {
   motorbikes: Motorbike[];
   getBrandName: (brandId: number) => string;
   onEdit: (motorbike: Motorbike) => void;
   onDelete: (motorbikeId: number) => void;
+  onViewDetail: (motorbike: Motorbike) => void;
 }
 
 export function MotorbikeList({
@@ -22,6 +23,7 @@ export function MotorbikeList({
   getBrandName,
   onEdit,
   onDelete,
+  onViewDetail,
 }: MotorbikeListProps) {
   return (
     <div className="rounded-md border">
@@ -59,12 +61,21 @@ export function MotorbikeList({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => onEdit(motorbike)}>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => onEdit(motorbike)}
+                    >
                       <Edit className="mr-2 h-4 w-4" /> Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => onViewDetail(motorbike)}
+                    >
+                      <Eye className="mr-2 h-4 w-4" /> View{" "}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      className="text-red-600"
+                      className="text-red-600 cursor-pointer"
                       onClick={() => onDelete(motorbike.id)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" /> Delete

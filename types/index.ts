@@ -41,6 +41,16 @@ export interface Motorbike {
   price: number;
 }
 
+export interface MotorbikeUnit {
+  id: number;
+  motorbike_id: number;
+  license_plate: string;
+  color?: string;
+  image?: string;
+  status: string;
+  detail: string;
+}
+
 export interface MotorbikeForm {
   id: number;
   brand_id: number;

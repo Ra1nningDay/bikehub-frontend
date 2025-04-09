@@ -17,6 +17,7 @@ import { BrandList } from "@/components/dashboard/motorbikes/brand-list";
 import { MotorbikeForm } from "@/components/dashboard/motorbikes/motorbike-form";
 import { BrandForm } from "@/components/dashboard/motorbikes/brand-form";
 import { useMotorbikeManagement } from "@/hooks/mototbikes/use-motobike-manangement";
+import { MotorbikeDetailModal } from "@/components/dashboard/motorbikes/motorbike-detail";
 import { Motorbike, MotorbikeBrand } from "@/types";
 
 interface MotorbikeFormData {
@@ -45,6 +46,17 @@ export default function MotorbikesPage() {
     handleDeleteMotorbike,
   } = useMotorbikeManagement();
 
+  const [selectedMotorbike, setSelectedMotorbike] = useState<Motorbike | null>(
+    null,
+  );
+  const [motorbikeDetailModalOpen, setMotorbikeDetailModalOpen] =
+    useState(false);
+
+  const handleOpenDetailModal = (motorbike: Motorbike) => {
+    setSelectedMotorbike(motorbike);
+    setMotorbikeDetailModalOpen(true);
+  };
+
   const [brandForm, setBrandForm] = useState<MotorbikeBrand>({
     id: 0,
     name: "",
@@ -59,10 +71,9 @@ export default function MotorbikesPage() {
     name: "",
     price: "",
   });
-  const [isEditingMotorbike, setIsEditingMotorbike] = useState<boolean>(false); // เปลี่ยนจาก isEditingMotorcycle เป็น isEditingMotorbike
+  const [isEditingMotorbike, setIsEditingMotorbike] = useState<boolean>(false);
   const [motorbikeDialogOpen, setMotorbikeDialogOpen] =
-    useState<boolean>(false); // เปลี่ยนจาก motorcycleDialogOpen เป็น motorbikeDialogOpen
-
+    useState<boolean>(false);
   const onAddBrand = () => {
     setIsEditingBrand(false);
     setBrandForm({ id: 0, name: "", description: "" });
@@ -153,6 +164,7 @@ export default function MotorbikesPage() {
                 getBrandName={getBrandName}
                 onEdit={onEditMotorbike}
                 onDelete={handleDeleteMotorbike}
+                onViewDetail={handleOpenDetailModal}
               />
             </CardContent>
           </Card>
@@ -200,6 +212,15 @@ export default function MotorbikesPage() {
         onSave={onSaveMotorbike}
         brands={brands}
         isEditing={isEditingMotorbike}
+      />
+
+      <MotorbikeDetailModal
+        open={motorbikeDetailModalOpen}
+        onOpenChange={setMotorbikeDetailModalOpen}
+        motorbike={selectedMotorbike}
+        brandName={
+          selectedMotorbike ? getBrandName(selectedMotorbike.brand_id) : ""
+        }
       />
     </>
   );
