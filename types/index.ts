@@ -36,11 +36,19 @@ export interface MotorbikeBrand {
 
 export interface Motorbike {
   id: number;
-  brand_id: number;
   name: string;
   price: number;
+  image: string;
+  brand: string;
+  category: string;
+  engineSize?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  rating?: number;
+  description?: string;
+  status?: string;
+  available?: boolean;
 }
-
 export interface MotorbikeUnit {
   id: number;
   motorbike_id: number;
@@ -72,4 +80,16 @@ export interface BrandFormProps {
   setForm: (form: MotorbikeBrand) => void;
   onSave: () => void;
   isEditing: boolean;
+}
+
+export interface BookingData {
+  user_id: number;
+  motorbike_id: number;
+  pickup_location: string;
+  dropoff_location: string;
+  pickup_date: string;
+  dropoff_date: string;
+  total_price: number;
+  payment_id?: number;
+  status: string;
 }
