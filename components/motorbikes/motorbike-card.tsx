@@ -88,7 +88,7 @@ export function MotorbikeCard({ motorbike }: MotorbikeCardProps) {
 
                 <div className="flex space-x-2">
                     <Button asChild className="flex-1">
-                        <Link href={`/motorbike/${motorbike.id}`}>
+                        <Link href={`/motorbikes/motorbike/${motorbike.id}`}>
                             View Details
                         </Link>
                     </Button>

@@ -1,3 +1,4 @@
+// app/motorbikes/page.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -8,7 +9,6 @@ import { ActiveFilters } from "@/components/motorbikes/active-filter";
 import { MotorbikeListHeader } from "@/components/motorbikes/motorbikes-list-header";
 import { MotorbikeGrid } from "@/components/motorbikes/motorbike-grid";
 import { FilterSheet } from "@/components/motorbikes/filter-sheet";
-
 import { Button } from "@/components/ui/button";
 
 export default function MotorbikePage() {
@@ -42,8 +42,7 @@ export default function MotorbikePage() {
                 <div className="container mx-auto px-4">
                     <MotorbikeListHeader
                         totalMotorbikes={allMotorbikes.length}
-                    />{" "}
-                    {/* เปลี่ยนเป็น allMotorbikes */}
+                    />
                     <div className="flex justify-between mb-4">
                         <ActiveFilters />
                         <FilterSheet>
