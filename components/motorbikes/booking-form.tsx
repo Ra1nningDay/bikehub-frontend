@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/auth/use-auth";
-import { createBooking } from "@/lib/api";
+import { useBooking } from "@/hooks/booking/use-booking";
 import type { Motorbike } from "@/types";
 import { BookingDateStep } from "./booking/steps/booking-date-step";
 import { BookingPersonalStep } from "./booking/steps/booking-personal-step";
@@ -18,12 +18,11 @@ import { BookingStepper } from "./booking/booking-stepper";
 export interface BookingFormData {
     startDate: Date;
     endDate: Date;
-    startTime: string;
-    endTime: string;
     fullName: string;
     email: string;
     phone: string;
     pickupLocation: string;
+    dropoffLocation: string;
     totalPrice: number;
     days: number;
 }
@@ -35,20 +34,19 @@ interface BookingFormProps {
 
 export function BookingForm({ motorbike, onClose }: BookingFormProps) {
     const { user } = useAuth();
+    const { createBooking } = useBooking();
     const { toast } = useToast();
-    const router = useRouter();
     const [currentStep, setCurrentStep] = useState(0);
     const [bookingComplete, setBookingComplete] = useState(false);
     const [bookingId, setBookingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<BookingFormData>({
         startDate: new Date(),
         endDate: new Date(new Date().setDate(new Date().getDate() + 3)),
-        startTime: "10:00",
-        endTime: "10:00",
         fullName: user?.fullName || "",
         email: user?.email || "",
         phone: user?.phone || "",
         pickupLocation: "Main Office",
+        dropoffLocation: "Main Office", // Default to same location
         totalPrice: 0,
         days: 3,
     });
@@ -81,12 +79,29 @@ export function BookingForm({ motorbike, onClose }: BookingFormProps) {
 
     const handleSubmit = async () => {
         try {
-            // In a real app, you would call your API here
-            const response = await createBooking({
-                motorbikeId: motorbike.id,
-                userId: user?.id,
-                ...formData,
-            });
+            // แปลงวันที่เป็น Date object
+            const pickupDateTime = new Date(formData.startDate); // ใช้แค่วันที่
+            const dropoffDateTime = new Date(formData.endDate); // ใช้แค่วันที่
+
+            // แปลงเป็นรูปแบบ ISO 8601 (รวมเวลา) โดยการเพิ่มเวลา 00:00:00
+            const formattedPickupDate = pickupDateTime.toISOString(); // จะได้ "2025-04-10T00:00:00.000Z"
+            const formattedDropoffDate = dropoffDateTime.toISOString(); // จะได้ "2025-04-13T00:00:00.000Z"
+
+            // Map form data to the DTO structure required by the backend
+            const bookingDTO = {
+                user_id: user?.id ? Number.parseInt(user.id) : 0,
+                motorbike_id: motorbike.id,
+                pickup_location:
+                    formData.pickupLocation || "Default Pickup Location",
+                dropoff_location:
+                    formData.dropoffLocation || formData.pickupLocation,
+                pickup_date: formattedPickupDate, // ส่งเป็น ISO 8601 ที่มีเวลา
+                dropoff_date: formattedDropoffDate, // ส่งเป็น ISO 8601 ที่มีเวลา
+                total_price: Number(formData.totalPrice),
+            };
+
+            // ใช้ฟังก์ชัน createBooking เพื่อสร้างการจอง
+            const response = await createBooking(bookingDTO);
 
             setBookingId(response.id);
             setBookingComplete(true);

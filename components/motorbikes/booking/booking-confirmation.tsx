@@ -63,6 +63,16 @@ export function BookingConfirmation({
         router.push("/auth/register");
     };
 
+    // Get location labels
+    const getLocationLabel = (value: string) => {
+        const locations = {
+            "Main Office": "Main Office - 123 Motorbike St.",
+            Downtown: "Downtown - 456 Center Ave.",
+            Airport: "Airport Terminal - 789 Airport Rd.",
+        };
+        return locations[value as keyof typeof locations] || value;
+    };
+
     return (
         <div className="space-y-6">
             <motion.div
@@ -117,27 +127,35 @@ export function BookingConfirmation({
                                 </div>
 
                                 <div className="flex items-start">
-                                    <Clock className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
-                                    <div>
-                                        <p className="font-medium">Times</p>
-                                        <p className="text-gray-600">
-                                            Pickup: {formData.startTime} •
-                                            Return: {formData.endTime}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-start">
                                     <MapPin className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
                                     <div>
                                         <p className="font-medium">
                                             Pickup Location
                                         </p>
                                         <p className="text-gray-600">
-                                            {formData.pickupLocation}
+                                            {getLocationLabel(
+                                                formData.pickupLocation
+                                            )}
                                         </p>
                                     </div>
                                 </div>
+
+                                {formData.pickupLocation !==
+                                    formData.dropoffLocation && (
+                                    <div className="flex items-start">
+                                        <MapPin className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
+                                        <div>
+                                            <p className="font-medium">
+                                                Dropoff Location
+                                            </p>
+                                            <p className="text-gray-600">
+                                                {getLocationLabel(
+                                                    formData.dropoffLocation
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="flex items-start">
                                     <div className="bg-primary/10 text-primary font-semibold px-3 py-1 rounded-full">

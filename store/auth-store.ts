@@ -1,23 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import axios from "axios";
-
-export type User = {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    displayName?: string;
-    provider?: "email" | "google";
-    roles: string[];
-    createdAt?: string;
-    updatedAt?: string;
-    phone?: string;
-    address?: string;
-    city?: string;
-    country?: string;
-    fullName?: string;
-};
+import { User } from "@/types";
+import { getProfile } from "@/lib/api/user";
 
 interface AuthStateActions {
     login: (email: string, password: string) => Promise<void>;
@@ -25,6 +10,7 @@ interface AuthStateActions {
     logout: () => void;
     clearError: () => void;
     setAuthStateFromProvider: (token: string, user: User) => void;
+    fetchUserProfile: () => Promise<void>;
 }
 
 interface AuthStateData {
@@ -168,6 +154,21 @@ export const useAuthStore = create<AuthStateData & AuthStateActions>()(
                     isLoading: false,
                     error: null,
                 });
+            },
+
+            fetchUserProfile: async () => {
+                set({ isLoading: true, error: null });
+                try {
+                    const state = useAuthStore.getState();
+                    if (!state.token) throw new Error("No token found");
+                    const profile = await getProfile(state.token);
+                    set({ user: profile, isLoading: false });
+                } catch (error) {
+                    set({
+                        error: "Failed to fetch user profile",
+                        isLoading: false,
+                    });
+                }
             },
         }),
         {

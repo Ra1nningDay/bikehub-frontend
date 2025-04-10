@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CalendarIcon, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format, differenceInDays } from "date-fns";
 import { calculateTotalPrice } from "@/lib/booking-utils";
 import type { BookingFormData } from "../../booking-form";
@@ -36,15 +37,14 @@ export function BookingDateStep({
     motorbike,
     onNext,
 }: BookingDateStepProps) {
-    // Generate time options (every 30 minutes from 8:00 to 20:00)
-    const timeOptions = [];
-    for (let hour = 8; hour <= 20; hour++) {
-        const hourStr = hour.toString().padStart(2, "0");
-        timeOptions.push(`${hourStr}:00`);
-        if (hour < 20) {
-            timeOptions.push(`${hourStr}:30`);
-        }
-    }
+    const [sameLocation, setSameLocation] = useState(true);
+
+    // Location options
+    const locationOptions = [
+        { value: "Main Office", label: "Main Office - 123 Motorbike St." },
+        { value: "Downtown", label: "Downtown - 456 Center Ave." },
+        { value: "Airport", label: "Airport Terminal - 789 Airport Rd." },
+    ];
 
     // Calculate days and total price when dates change
     useEffect(() => {
@@ -71,6 +71,22 @@ export function BookingDateStep({
         formData.days,
         formData.totalPrice,
     ]);
+
+    // Handle same location checkbox change
+    const handleSameLocationChange = (checked: boolean) => {
+        setSameLocation(checked);
+        if (checked) {
+            updateFormData({ dropoffLocation: formData.pickupLocation });
+        }
+    };
+
+    // Handle pickup location change
+    const handlePickupLocationChange = (value: string) => {
+        updateFormData({ pickupLocation: value });
+        if (sameLocation) {
+            updateFormData({ dropoffLocation: value });
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -109,33 +125,6 @@ export function BookingDateStep({
                                 />
                             </PopoverContent>
                         </Popover>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="start-time">Start Time</Label>
-                        <Select
-                            value={formData.startTime}
-                            onValueChange={(value) =>
-                                updateFormData({ startTime: value })
-                            }
-                        >
-                            <SelectTrigger id="start-time" className="w-full">
-                                <div className="flex items-center">
-                                    <Clock className="mr-2 h-4 w-4 text-gray-500" />
-                                    <SelectValue placeholder="Select time" />
-                                </div>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {timeOptions.map((time) => (
-                                    <SelectItem
-                                        key={`start-${time}`}
-                                        value={time}
-                                    >
-                                        {time}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                     </div>
                 </div>
 
@@ -176,59 +165,76 @@ export function BookingDateStep({
                             </PopoverContent>
                         </Popover>
                     </div>
+                </div>
+            </div>
 
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="pickup-location">Pickup Location</Label>
+                    <Select
+                        value={formData.pickupLocation}
+                        onValueChange={handlePickupLocationChange}
+                    >
+                        <SelectTrigger id="pickup-location" className="w-full">
+                            <SelectValue placeholder="Select location" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {locationOptions.map((location) => (
+                                <SelectItem
+                                    key={location.value}
+                                    value={location.value}
+                                >
+                                    {location.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                    <Checkbox
+                        id="same-location"
+                        checked={sameLocation}
+                        onCheckedChange={handleSameLocationChange}
+                    />
+                    <label
+                        htmlFor="same-location"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Return to the same location
+                    </label>
+                </div>
+
+                {!sameLocation && (
                     <div className="space-y-2">
-                        <Label htmlFor="end-time">End Time</Label>
+                        <Label htmlFor="dropoff-location">
+                            Dropoff Location
+                        </Label>
                         <Select
-                            value={formData.endTime}
+                            value={formData.dropoffLocation}
                             onValueChange={(value) =>
-                                updateFormData({ endTime: value })
+                                updateFormData({ dropoffLocation: value })
                             }
                         >
-                            <SelectTrigger id="end-time" className="w-full">
-                                <div className="flex items-center">
-                                    <Clock className="mr-2 h-4 w-4 text-gray-500" />
-                                    <SelectValue placeholder="Select time" />
-                                </div>
+                            <SelectTrigger
+                                id="dropoff-location"
+                                className="w-full"
+                            >
+                                <SelectValue placeholder="Select location" />
                             </SelectTrigger>
                             <SelectContent>
-                                {timeOptions.map((time) => (
+                                {locationOptions.map((location) => (
                                     <SelectItem
-                                        key={`end-${time}`}
-                                        value={time}
+                                        key={location.value}
+                                        value={location.value}
                                     >
-                                        {time}
+                                        {location.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="pickup-location">Pickup Location</Label>
-                <Select
-                    value={formData.pickupLocation}
-                    onValueChange={(value) =>
-                        updateFormData({ pickupLocation: value })
-                    }
-                >
-                    <SelectTrigger id="pickup-location" className="w-full">
-                        <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="Main Office">
-                            Main Office - 123 Motorbike St.
-                        </SelectItem>
-                        <SelectItem value="Downtown">
-                            Downtown - 456 Center Ave.
-                        </SelectItem>
-                        <SelectItem value="Airport">
-                            Airport Terminal - 789 Airport Rd.
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
+                )}
             </div>
 
             <Card className="bg-gray-50 border-gray-200">

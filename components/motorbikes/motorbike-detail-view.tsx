@@ -17,7 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { Motorbike } from "@/types";
 import { MotorbikeCard } from "./motorbike-card";
 import { BookingForm } from "./booking-form";

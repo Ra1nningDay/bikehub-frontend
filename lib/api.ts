@@ -1,10 +1,16 @@
-export async function createBooking(bookingData: any): Promise<{ id: string }> {
-    try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+import { BookingAPI } from "./api/booking";
+import { CreateBookingDTO } from "@/types";
 
-        return {
-            id: `BK-${Math.floor(100000 + Math.random() * 900000)}`,
-        };
+/**
+ * Create a new booking
+ * This is now a wrapper around our BookingAPI service
+ */
+export async function createBooking(
+    bookingData: CreateBookingDTO
+): Promise<{ id: string }> {
+    try {
+        const booking = await BookingAPI.create(bookingData);
+        return { id: booking.id };
     } catch (error) {
         throw new Error("Failed to create booking");
     }

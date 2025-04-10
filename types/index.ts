@@ -1,3 +1,21 @@
+export type User = {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    displayName?: string;
+    provider?: "email" | "google";
+    roles: string[];
+    createdAt?: string;
+    updatedAt?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    fullName?: string;
+    bio?: string;
+};
+
 export interface Motorcycle {
     id: number;
     name?: string;
@@ -12,14 +30,18 @@ export interface Motorcycle {
 }
 
 export interface BookingFormData {
+    startDate: Date;
+    endDate: Date;
     pickupLocation: string;
     dropoffLocation: string;
     pickupDate: string;
     dropoffDate: string;
     motorcycle: string;
-    name: string;
+    fullName: string;
     email: string;
     phone: string;
+    totalPrice: number;
+    days: number;
 }
 
 export interface FilterState {
@@ -95,3 +117,5 @@ export interface BookingData {
     payment_id?: number;
     status: string;
 }
+
+export * from "./booking";
