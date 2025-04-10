@@ -21,11 +21,13 @@ import {
 } from "@/components/ui/select";
 import type { MotorbikeBrand } from "@/types";
 
+// ปรับ interface ให้รองรับ image
 interface MotorbikeFormData {
     id: number;
     brand_id: number;
     name: string;
     price: string;
+    image?: File | string; // เพิ่ม image เข้าไปใน type
 }
 
 interface MotorbikeFormProps {
@@ -33,10 +35,11 @@ interface MotorbikeFormProps {
     onOpenChange: (open: boolean) => void;
     form: MotorbikeFormData;
     setForm: (form: MotorbikeFormData) => void;
-    onSave: () => void;
     brands: MotorbikeBrand[];
-    isEditing: boolean;
     currentImage?: string;
+    onAdd: () => void; // ใช้เฉพาะ onAdd และ onEdit
+    onEdit: () => void;
+    isEditing: boolean;
 }
 
 export function MotorbikeForm({
@@ -44,34 +47,40 @@ export function MotorbikeForm({
     onOpenChange,
     form,
     setForm,
-    onSave,
     brands,
     isEditing,
     currentImage,
+    onAdd,
+    onEdit,
 }: MotorbikeFormProps) {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (currentImage) {
+        if (currentImage && !imageFile) {
             setImagePreview(currentImage);
-        } else {
+        } else if (!imageFile) {
             setImagePreview(null);
         }
-    }, [currentImage]);
+    }, [currentImage, imageFile]);
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             setImageFile(file);
 
-            // Create a preview URL
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
+
+            // อัพเดท form ด้วย image file
+            setForm({
+                ...form,
+                image: file,
+            });
         }
     };
 
@@ -81,24 +90,19 @@ export function MotorbikeForm({
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
+        setForm({
+            ...form,
+            image: undefined,
+        });
     };
 
-    // Update the handleSave function to properly attach the file to the form
     const handleSave = () => {
-        // Create a new form object to avoid mutating the original
-        const updatedForm = { ...form };
-
-        // Attach the image file if one is selected
-        if (imageFile) {
-            // @ts-ignore - Adding image property to form
-            updatedForm.image = imageFile;
+        // เรียกฟังก์ชันตามสถานะ isEditing
+        if (isEditing) {
+            onEdit();
+        } else {
+            onAdd();
         }
-
-        // Update the form in the parent component
-        setForm(updatedForm);
-
-        // Call the parent's save function, which will send the form data to the server
-        onSave();
     };
 
     const triggerFileInput = () => {
@@ -215,7 +219,7 @@ export function MotorbikeForm({
                                 type="file"
                                 accept="image/png, image/jpeg, image/webp"
                                 className="hidden"
-                                id="fileIntput"
+                                id="fileInput" // แก้ typo จาก fileIntput เป็น fileInput
                                 onChange={handleFileChange}
                             />
 
@@ -246,7 +250,7 @@ export function MotorbikeForm({
                         onClick={handleSave}
                         disabled={!form.name || !form.price || !form.brand_id}
                     >
-                        Save
+                        {isEditing ? "Update" : "Add"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

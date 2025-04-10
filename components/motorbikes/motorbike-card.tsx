@@ -5,12 +5,15 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import type { Motorbike } from "@/types";
+import { useState } from "react";
+import { BookingForm } from "./booking-form";
 
 interface MotorbikeCardProps {
     motorbike: Motorbike;
 }
 
 export function MotorbikeCard({ motorbike }: MotorbikeCardProps) {
+    const [isBookingOpen, setIsBookingOpen] = useState(false);
     const brandName =
         typeof motorbike.brand === "object" && motorbike.brand !== null
             ? (motorbike.brand as unknown as { name: string }).name
@@ -92,11 +95,22 @@ export function MotorbikeCard({ motorbike }: MotorbikeCardProps) {
                             View Details
                         </Link>
                     </Button>
-                    <Button variant="outline" className="flex-1">
+                    <Button
+                        onClick={() => setIsBookingOpen(true)}
+                        variant="outline"
+                        className="flex-1"
+                    >
                         Book Now
                     </Button>
                 </div>
             </div>
+            {/* Booking Form Modal */}
+            {isBookingOpen && (
+                <BookingForm
+                    motorbike={motorbike}
+                    onClose={() => setIsBookingOpen(false)}
+                />
+            )}
         </motion.div>
     );
 }

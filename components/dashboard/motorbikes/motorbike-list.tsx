@@ -7,8 +7,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, MoreHorizontal, Trash2, Eye } from "lucide-react";
-import { Motorbike, MotorbikeUnit } from "@/types";
+import { Edit, MoreHorizontal, Trash2, Eye, RefreshCw } from "lucide-react";
+import { Motorbike } from "@/types";
 
 interface MotorbikeListProps {
     motorbikes: Motorbike[];
@@ -16,6 +16,7 @@ interface MotorbikeListProps {
     onEdit: (motorbike: Motorbike) => void;
     onDelete: (motorbikeId: number) => void;
     onViewDetail: (motorbike: Motorbike) => void;
+    onRefresh: () => void; // เพิ่มฟังก์ชันสำหรับรีเฟรชข้อมูล
 }
 
 export function MotorbikeList({
@@ -24,9 +25,21 @@ export function MotorbikeList({
     onEdit,
     onDelete,
     onViewDetail,
+    onRefresh, // รับฟังก์ชันที่รีเฟรชจาก props
 }: MotorbikeListProps) {
     return (
         <div className="rounded-md border">
+            {/* เพิ่มปุ่ม Refresh ด้านบนของตาราง */}
+            <div className="flex justify-end p-4">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onRefresh} // เมื่อกดปุ่มจะเรียกฟังก์ชัน onRefresh
+                >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh
+                </Button>
+            </div>
             <table className="w-full caption-bottom text-sm">
                 <thead>
                     <tr className="border-b transition-colors hover:bg-muted/50">
@@ -46,23 +59,27 @@ export function MotorbikeList({
                     </tr>
                 </thead>
                 <tbody>
-                    {motorbikes.map((motorbike) => (
+                    {motorbikes.map((motorbike, index) => (
                         <tr
-                            key={motorbike.id}
+                            key={`${motorbike.id}`}
                             className="border-b transition-colors hover:bg-muted/50"
                         >
                             <td className="p-4">{motorbike.id}</td>
                             <td className="p-4 font-medium">
-                                {motorbike.name}
+                                {motorbike.name || "N/A"}
                             </td>
                             <td className="p-4">
                                 {getBrandName(motorbike.brand_id)}
                             </td>
                             <td className="p-4">
                                 $
-                                {motorbike.price.toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                })}
+                                {motorbike.price !== undefined &&
+                                motorbike.price !== null
+                                    ? motorbike.price.toLocaleString(
+                                          undefined,
+                                          { minimumFractionDigits: 2 }
+                                      )
+                                    : "N/A"}
                             </td>
                             <td className="p-4 text-right">
                                 <DropdownMenu>
@@ -89,7 +106,7 @@ export function MotorbikeList({
                                             }
                                         >
                                             <Eye className="mr-2 h-4 w-4" />{" "}
-                                            View{" "}
+                                            View
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem
@@ -107,7 +124,7 @@ export function MotorbikeList({
                         </tr>
                     ))}
                     {motorbikes.length === 0 && (
-                        <tr>
+                        <tr key="no-motorbikes">
                             <td
                                 colSpan={5}
                                 className="p-4 text-center text-muted-foreground"

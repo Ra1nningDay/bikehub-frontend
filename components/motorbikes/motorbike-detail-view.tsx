@@ -40,13 +40,12 @@ export function MotorbikeDetailView({
     const brandName = getBrandName(motorbike);
 
     const imageUrl = motorbike?.image
-        ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${motorbike.image.replace(
+        ? `${process.env.NEXT_PUBLIC_API_URL}/${motorbike.image.replace(
               /\\/g,
               "/"
           )}`
         : "/placeholder.svg?height=400&width=600";
 
-    // For demo purposes, let's create some sample images
     const galleryImages = [
         imageUrl,
         "/placeholder.svg?height=400&width=600&text=Side+View",

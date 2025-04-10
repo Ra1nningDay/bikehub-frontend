@@ -19,13 +19,14 @@ import { BrandForm } from "@/components/dashboard/motorbikes/brand-form";
 import { useMotorbikeManagement } from "@/hooks/mototbikes/use-motobike-manangement";
 import { MotorbikeDetailModal } from "@/components/dashboard/motorbikes/motorbike-detail";
 import type { Motorbike, MotorbikeBrand } from "@/types";
+import { toast } from "react-toastify";
 
 interface MotorbikeFormData {
     id: number;
     brand_id: number;
     name: string;
     price: string;
-    image?: File | string;
+    image?: File | string; // รองรับ image ใน form
 }
 
 export default function MotorbikesPage() {
@@ -51,12 +52,6 @@ export default function MotorbikesPage() {
         useState<Motorbike | null>(null);
     const [motorbikeDetailModalOpen, setMotorbikeDetailModalOpen] =
         useState(false);
-
-    const handleOpenDetailModal = (motorbike: Motorbike) => {
-        setSelectedMotorbike(motorbike);
-        setMotorbikeDetailModalOpen(true);
-    };
-
     const [brandForm, setBrandForm] = useState<MotorbikeBrand>({
         id: 0,
         name: "",
@@ -64,7 +59,6 @@ export default function MotorbikesPage() {
     });
     const [isEditingBrand, setIsEditingBrand] = useState<boolean>(false);
     const [brandDialogOpen, setBrandDialogOpen] = useState<boolean>(false);
-
     const [motorbikeForm, setMotorbikeForm] = useState<MotorbikeFormData>({
         id: 0,
         brand_id: brands[0]?.id || 0,
@@ -77,7 +71,7 @@ export default function MotorbikesPage() {
     const [motorbikeDialogOpen, setMotorbikeDialogOpen] =
         useState<boolean>(false);
 
-    // Update brand_id when brands are loaded
+    // อัพเดท brand_id เมื่อ brands โหลด
     useEffect(() => {
         if (brands.length > 0 && motorbikeForm.brand_id === 0) {
             setMotorbikeForm((prev) => ({ ...prev, brand_id: brands[0].id }));
@@ -108,6 +102,7 @@ export default function MotorbikesPage() {
             brand_id: brands[0]?.id || 0,
             name: "",
             price: "1",
+            image: undefined,
         });
         setSelectedMotorbike(null);
         setMotorbikeDialogOpen(true);
@@ -121,64 +116,84 @@ export default function MotorbikesPage() {
             brand_id: motorbike.brand_id,
             name: motorbike.name,
             price: motorbike.price.toString(),
+            image: motorbike.image,
         });
         setMotorbikeDialogOpen(true);
     };
 
-    const onSaveMotorbike = async () => {
-        console.log("motorbikeForm:", motorbikeForm);
-        console.log("selectedMotorbike:", selectedMotorbike);
-
-        // ตรวจสอบค่าที่จำเป็น
+    const onAddMotorbikeSubmit = async () => {
         const price = parseFloat(motorbikeForm.price);
-
         if (
             !motorbikeForm.name ||
             isNaN(price) ||
             price <= 0 ||
             !motorbikeForm.brand_id
         ) {
-            console.error(
-                "Missing required fields or invalid price:",
-                motorbikeForm
+            toast.error(
+                "Please fill in all required fields with valid values."
             );
             return;
         }
 
-        // สร้าง FormData
-        const formData = new FormData();
-        formData.append("name", motorbikeForm.name);
-        formData.append("price", price.toString());
-        formData.append("brand_id", motorbikeForm.brand_id.toString());
+        const result = await handleAddMotorbike({
+            id: motorbikeForm.id,
+            name: motorbikeForm.name,
+            price: price,
+            brand_id: motorbikeForm.brand_id,
+            image: motorbikeForm.image,
+        });
 
-        // ตรวจสอบว่ามีไฟล์ใน motorbikeForm.image หรือไม่
-        if (motorbikeForm.image) {
-            formData.append("image", motorbikeForm.image);
+        if (result.success) {
+            toast.success("Motorbike added successfully!");
+            setMotorbikeDialogOpen(false);
+            setMotorbikeForm({
+                id: 0,
+                brand_id: brands[0]?.id || 0,
+                name: "",
+                price: "1",
+                image: undefined,
+            });
         } else {
-            console.error("No image selected");
+            toast.error("Failed to add motorbike.");
+            console.error("Error from handleAddMotorbike:", result.error);
+        }
+    };
+
+    const onEditMotorbikeSubmit = async () => {
+        const price = parseFloat(motorbikeForm.price);
+        if (
+            !motorbikeForm.name ||
+            isNaN(price) ||
+            price <= 0 ||
+            !motorbikeForm.brand_id ||
+            !motorbikeForm.id
+        ) {
+            toast.error(
+                "Please fill in all required fields with valid values."
+            );
             return;
         }
 
-        try {
-            // ส่งข้อมูลไปยัง API
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/motorbikes`,
-                {
-                    method: "POST",
-                    body: formData,
-                }
-            );
+        const result = await handleEditMotorbike({
+            id: motorbikeForm.id,
+            name: motorbikeForm.name,
+            price: price,
+            brand_id: motorbikeForm.brand_id,
+            image: motorbikeForm.image,
+        });
 
-            const data = await response.json();
-            if (response.ok) {
-                console.log("Motorbike saved:", data);
-                setMotorbikeDialogOpen(false); // ปิด dialog
-            } else {
-                console.error("Failed to save motorbike:", data);
-            }
-        } catch (error) {
-            console.error("Error in onSaveMotorbike:", error);
+        if (result.success) {
+            toast.success("Motorbike updated successfully!");
+            setMotorbikeDialogOpen(false);
+        } else {
+            toast.error("Failed to update motorbike.");
+            console.error("Error from handleEditMotorbike:", result.error);
         }
+    };
+
+    const handleOpenDetailModal = (motorbike: Motorbike) => {
+        setSelectedMotorbike(motorbike);
+        setMotorbikeDetailModalOpen(true);
     };
 
     return (
@@ -271,7 +286,8 @@ export default function MotorbikesPage() {
                 onOpenChange={setMotorbikeDialogOpen}
                 form={motorbikeForm}
                 setForm={(form: MotorbikeFormData) => setMotorbikeForm(form)}
-                onSave={onSaveMotorbike}
+                onAdd={onAddMotorbikeSubmit}
+                onEdit={onEditMotorbikeSubmit}
                 brands={brands}
                 isEditing={isEditingMotorbike}
                 currentImage={selectedMotorbike?.image}

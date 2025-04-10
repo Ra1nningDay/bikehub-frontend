@@ -1,10 +1,10 @@
 export interface Motorcycle {
     id: number;
-    name: string;
+    name?: string;
     brand: string;
     category: string;
-    price: number;
-    image: string;
+    price?: number;
+    image?: string;
     rating: number;
     reviews: number;
     description: string;
@@ -49,6 +49,7 @@ export interface Motorbike {
     description?: string;
     status?: string;
     available?: boolean;
+    reviews?: number;
 }
 export interface MotorbikeUnit {
     id: number;

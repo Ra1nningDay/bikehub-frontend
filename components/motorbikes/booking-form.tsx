@@ -1,21 +1,32 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/auth/use-auth";
+import { createBooking } from "@/lib/api";
 import type { Motorbike } from "@/types";
+import { BookingDateStep } from "./booking/steps/booking-date-step";
+import { BookingPersonalStep } from "./booking/steps/booking-personal-step";
+import { BookingSummaryStep } from "./booking/steps/booking-summary-step";
+import { BookingConfirmation } from "./booking/booking-confirmation";
+import { BookingStepper } from "./booking/booking-stepper";
+
+export interface BookingFormData {
+    startDate: Date;
+    endDate: Date;
+    startTime: string;
+    endTime: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    pickupLocation: string;
+    totalPrice: number;
+    days: number;
+}
 
 interface BookingFormProps {
     motorbike: Motorbike;
@@ -23,28 +34,75 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ motorbike, onClose }: BookingFormProps) {
-    const [startDate, setStartDate] = useState<Date | undefined>(new Date());
-    const [endDate, setEndDate] = useState<Date | undefined>(
-        new Date(new Date().setDate(new Date().getDate() + 3))
-    );
-    const [step, setStep] = useState(1);
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const router = useRouter();
+    const [currentStep, setCurrentStep] = useState(0);
+    const [bookingComplete, setBookingComplete] = useState(false);
+    const [bookingId, setBookingId] = useState<string | null>(null);
+    const [formData, setFormData] = useState<BookingFormData>({
+        startDate: new Date(),
+        endDate: new Date(new Date().setDate(new Date().getDate() + 3)),
+        startTime: "10:00",
+        endTime: "10:00",
+        fullName: user?.fullName || "",
+        email: user?.email || "",
+        phone: user?.phone || "",
+        pickupLocation: "Main Office",
+        totalPrice: 0,
+        days: 3,
+    });
 
-    const calculateDays = () => {
-        if (!startDate || !endDate) return 0;
-        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const steps = [
+        { title: "Dates", description: "Select booking dates" },
+        { title: "Personal Info", description: "Enter your details" },
+        { title: "Review", description: "Confirm your booking" },
+    ];
+
+    const handleNext = () => {
+        setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
     };
 
-    const calculateTotal = () => {
-        const days = calculateDays();
-        return (days * motorbike.price).toFixed(2);
+    const handleBack = () => {
+        setCurrentStep((prev) => Math.max(prev - 1, 0));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // In a real app, you would submit the booking data to your API
-        alert("Booking submitted successfully!");
-        onClose();
+    const updateFormData = useCallback((data: Partial<BookingFormData>) => {
+        setFormData((prev) => {
+            // Check if any values are actually changing
+            const hasChanges = Object.entries(data).some(
+                ([key, value]) => prev[key as keyof BookingFormData] !== value
+            );
+
+            // Only update state if something is actually changing
+            return hasChanges ? { ...prev, ...data } : prev;
+        });
+    }, []);
+
+    const handleSubmit = async () => {
+        try {
+            // In a real app, you would call your API here
+            const response = await createBooking({
+                motorbikeId: motorbike.id,
+                userId: user?.id,
+                ...formData,
+            });
+
+            setBookingId(response.id);
+            setBookingComplete(true);
+
+            toast({
+                title: "Booking Successful",
+                description: `Your booking has been confirmed with ID: ${response.id}`,
+            });
+        } catch (error) {
+            toast({
+                title: "Booking Failed",
+                description:
+                    "There was an error processing your booking. Please try again.",
+                variant: "destructive",
+            });
+        }
     };
 
     const modalVariants = {
@@ -64,16 +122,19 @@ export function BookingForm({ motorbike, onClose }: BookingFormProps) {
                 animate="visible"
                 exit="hidden"
                 variants={modalVariants}
-                className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+                onClick={onClose}
             >
                 <motion.div
                     variants={contentVariants}
-                    className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto"
+                    className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-auto"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="flex justify-between items-center p-4 border-b">
+                    <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
                         <h3 className="text-lg font-semibold">
-                            Book {motorbike.name}
+                            {bookingComplete
+                                ? "Booking Confirmed"
+                                : `Book ${motorbike.name}`}
                         </h3>
                         <Button variant="ghost" size="icon" onClick={onClose}>
                             <X className="h-4 w-4" />
@@ -81,153 +142,51 @@ export function BookingForm({ motorbike, onClose }: BookingFormProps) {
                     </div>
 
                     <div className="p-6">
-                        {step === 1 ? (
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="pickup-date">
-                                        Pickup Date
-                                    </Label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start text-left font-normal"
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {startDate ? (
-                                                    format(startDate, "PPP")
-                                                ) : (
-                                                    <span>Pick a date</span>
-                                                )}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={startDate}
-                                                onSelect={setStartDate}
-                                                initialFocus
-                                                disabled={(date) =>
-                                                    date < new Date()
-                                                }
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
+                        {!bookingComplete ? (
+                            <>
+                                <BookingStepper
+                                    steps={steps}
+                                    currentStep={currentStep}
+                                />
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="return-date">
-                                        Return Date
-                                    </Label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start text-left font-normal"
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {endDate ? (
-                                                    format(endDate, "PPP")
-                                                ) : (
-                                                    <span>Pick a date</span>
-                                                )}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={endDate}
-                                                onSelect={setEndDate}
-                                                initialFocus
-                                                disabled={(date) =>
-                                                    date <
-                                                    (startDate || new Date())
-                                                }
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
+                                <div className="mt-6">
+                                    {currentStep === 0 && (
+                                        <BookingDateStep
+                                            formData={formData}
+                                            updateFormData={updateFormData}
+                                            motorbike={motorbike}
+                                            onNext={handleNext}
+                                        />
+                                    )}
 
-                                <div className="bg-blue-50 p-4 rounded-lg mt-6">
-                                    <div className="flex justify-between mb-2">
-                                        <span>Daily Rate:</span>
-                                        <span>
-                                            ${motorbike.price.toFixed(2)}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between mb-2">
-                                        <span>Number of Days:</span>
-                                        <span>{calculateDays()}</span>
-                                    </div>
-                                    <div className="flex justify-between font-semibold text-lg pt-2 border-t">
-                                        <span>Total:</span>
-                                        <span>${calculateTotal()}</span>
-                                    </div>
-                                </div>
+                                    {currentStep === 1 && (
+                                        <BookingPersonalStep
+                                            formData={formData}
+                                            updateFormData={updateFormData}
+                                            isAuthenticated={!!user}
+                                            onBack={handleBack}
+                                            onNext={handleNext}
+                                        />
+                                    )}
 
-                                <Button
-                                    className="w-full mt-4"
-                                    onClick={() => setStep(2)}
-                                >
-                                    Continue to Personal Details
-                                </Button>
-                            </div>
+                                    {currentStep === 2 && (
+                                        <BookingSummaryStep
+                                            formData={formData}
+                                            motorbike={motorbike}
+                                            onBack={handleBack}
+                                            onSubmit={handleSubmit}
+                                        />
+                                    )}
+                                </div>
+                            </>
                         ) : (
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Full Name</Label>
-                                    <Input
-                                        id="name"
-                                        placeholder="John Doe"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email Address</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="john@example.com"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone Number</Label>
-                                    <Input
-                                        id="phone"
-                                        type="tel"
-                                        placeholder="+1 (555) 123-4567"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="license">
-                                        Driver's License Number
-                                    </Label>
-                                    <Input
-                                        id="license"
-                                        placeholder="DL12345678"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="flex gap-4 mt-6">
-                                    <Button
-                                        variant="outline"
-                                        type="button"
-                                        className="flex-1"
-                                        onClick={() => setStep(1)}
-                                    >
-                                        Back
-                                    </Button>
-                                    <Button type="submit" className="flex-1">
-                                        Complete Booking
-                                    </Button>
-                                </div>
-                            </form>
+                            <BookingConfirmation
+                                bookingId={bookingId || ""}
+                                motorbike={motorbike}
+                                formData={formData}
+                                isAuthenticated={!!user}
+                                onClose={onClose}
+                            />
                         )}
                     </div>
                 </motion.div>
