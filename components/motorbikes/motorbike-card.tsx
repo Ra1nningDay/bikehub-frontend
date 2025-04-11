@@ -36,7 +36,7 @@ export function MotorbikeCard({ motorbike }: MotorbikeCardProps) {
             exit={{ opacity: 0, y: 20 }}
             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
         >
-            <div className="relative h-60 overflow-hidden group">
+            <div className="relative h-64 overflow-hidden group">
                 <Image
                     src={imageUrl}
                     alt={motorbike.name || "Motorbike"}

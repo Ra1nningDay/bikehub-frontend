@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUserBookings } from "@/hooks/booking/use-user-bookings";
+import { useBookingStore } from "@/store/use-booking-store";
 import { BookingCard } from "./booking-card";
 import { BookingDetailsModal } from "./booking-details-modal";
 import { CancelBookingDialog } from "./cancel-booking-dialog";
@@ -19,9 +19,20 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Booking } from "@/types";
 
-export function BookingHistory() {
-    const { bookings, selectedBooking, isLoading, error, setSelectedBooking } =
-        useUserBookings();
+interface BookingHistoryProps {
+    userId: string;
+}
+
+export function BookingHistory({ userId }: BookingHistoryProps) {
+    const {
+        bookings,
+        isLoading,
+        error,
+        selectedBooking,
+        fetchBookings,
+        setSelectedBooking,
+    } = useBookingStore();
+
     const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortOption, setSortOption] = useState("newest");
@@ -30,10 +41,16 @@ export function BookingHistory() {
     );
 
     useEffect(() => {
-        if (bookings) {
+        if (userId) {
+            fetchBookings(userId);
+        }
+    }, [userId, fetchBookings]);
+
+    useEffect(() => {
+        // ตรวจสอบว่า bookings เป็น array ก่อนใช้งาน
+        if (Array.isArray(bookings)) {
             let filtered = [...bookings];
 
-            // Apply search filter
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
                 filtered = filtered.filter(
@@ -44,7 +61,6 @@ export function BookingHistory() {
                 );
             }
 
-            // Apply sorting
             filtered.sort((a, b) => {
                 switch (sortOption) {
                     case "newest":
@@ -67,6 +83,9 @@ export function BookingHistory() {
             });
 
             setFilteredBookings(filtered);
+        } else {
+            // ถ้า bookings ไม่ใช่ array ให้ตั้งค่า filteredBookings เป็น array ว่าง
+            setFilteredBookings([]);
         }
     }, [bookings, searchQuery, sortOption]);
 
@@ -85,18 +104,32 @@ export function BookingHistory() {
     const getUpcomingBookings = () => {
         return filteredBookings.filter(
             (booking) =>
-                new Date(booking.pickup_date) > new Date() &&
-                booking.status !== "cancelled"
+                booking.status === "pending" ||
+                (new Date(booking.pickup_date) > new Date() &&
+                    booking.status !== "cancelled")
         );
     };
 
     const getPastBookings = () => {
         return filteredBookings.filter(
             (booking) =>
-                new Date(booking.pickup_date) <= new Date() ||
-                booking.status === "cancelled"
+                booking.status !== "pending" &&
+                (new Date(booking.pickup_date) <= new Date() ||
+                    booking.status === "cancelled")
         );
     };
+
+    if (!userId) {
+        return (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                    User ID is required to view booking history.
+                </AlertDescription>
+            </Alert>
+        );
+    }
 
     if (isLoading) {
         return (
@@ -116,7 +149,7 @@ export function BookingHistory() {
         );
     }
 
-    if (bookings.length === 0) {
+    if (filteredBookings.length === 0) {
         return (
             <div className="bg-white rounded-lg shadow p-8 text-center">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -15,22 +15,21 @@ export default function AccountPage() {
     const { user, isAuthenticated, fetchUserProfile, isLoading, error } =
         useAuth();
     const router = useRouter();
-    const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false); // เพิ่ม state เพื่อเช็คว่าพยายามโหลดแล้ว
+    const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 
     // Load user profile if authenticated and not yet fetched
     useEffect(() => {
-        if (isAuthenticated && !user && !isLoading && !hasAttemptedFetch) {
-            setHasAttemptedFetch(true); // บอกว่าพยายามโหลดแล้ว
-            fetchUserProfile(); // เรียก fetch profile
+        if (isAuthenticated && !user && !isLoading) {
+            setHasAttemptedFetch(true);
+            fetchUserProfile();
         }
-    }, [isAuthenticated, user, isLoading, fetchUserProfile, hasAttemptedFetch]);
+    }, [isAuthenticated, user, isLoading, fetchUserProfile]);
 
     // Redirect logic with better timing control
     useEffect(() => {
-        if (isLoading || !hasAttemptedFetch) return; // รอจนโหลดเสร็จและพยายาม fetch แล้ว
-
-        if (!isAuthenticated || (!user && hasAttemptedFetch)) {
-            router.push("/"); // Redirect ถ้าไม่ authenticated หรือไม่มี user หลังจากลองโหลดแล้ว
+        // ถ้าไม่ authenticated หรือไม่มี user หลังจากที่พยายามโหลด
+        if (!isAuthenticated || !user) {
+            router.push("/"); // Redirect ไปหน้า login
         }
     }, [isAuthenticated, user, isLoading, router, hasAttemptedFetch]);
 
@@ -80,7 +79,7 @@ export default function AccountPage() {
                     </TabsContent>
 
                     <TabsContent value="bookings">
-                        <BookingHistory />
+                        <BookingHistory userId={user?.id || ""} />
                     </TabsContent>
                 </Tabs>
             </div>

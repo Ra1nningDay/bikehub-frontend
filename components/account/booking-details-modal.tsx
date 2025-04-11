@@ -88,7 +88,7 @@ export function BookingDetailsModal({
         if (booking.motorbike?.image) {
             return `${
                 process.env.NEXT_PUBLIC_API_URL
-            }/uploads/${booking.motorbike.image.replace(/\\/g, "/")}`;
+            }/${booking.motorbike.image.replace(/\\/g, "/")}`;
         }
         return "/placeholder.svg?height=200&width=300";
     };

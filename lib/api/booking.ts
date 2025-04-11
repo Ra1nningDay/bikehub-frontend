@@ -21,6 +21,21 @@ export const BookingAPI = {
     },
 
     /**
+     * Get bookings by user ID
+     */
+    getByUserId: async (userId: string): Promise<Booking[]> => {
+        try {
+            const response = await axios.get(
+                `${API_URL}/bookings/user/${userId}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching bookings for user ${userId}:`, error);
+            throw new Error("Failed to fetch user bookings");
+        }
+    },
+
+    /**
      * Get a booking by ID
      */
     getById: async (id: string): Promise<Booking> => {

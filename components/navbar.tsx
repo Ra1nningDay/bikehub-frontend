@@ -378,7 +378,7 @@ export default function Navbar() {
                                                     {...dropdownItemAnimation}
                                                 >
                                                     <Link
-                                                        href="/profile"
+                                                        href="/account"
                                                         className="flex items-center cursor-pointer w-full"
                                                     >
                                                         <User
@@ -607,7 +607,7 @@ export default function Navbar() {
                                                 {...dropdownItemAnimation}
                                             >
                                                 <Link
-                                                    href="/profile"
+                                                    href="/account"
                                                     className="flex items-center cursor-pointer w-full"
                                                 >
                                                     <User
@@ -716,7 +716,7 @@ export default function Navbar() {
                                         </motion.div>
                                         <motion.div variants={itemVariants}>
                                             <Link
-                                                href="/profile"
+                                                href="/account"
                                                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors inline-flex items-center"
                                                 onClick={() => setIsOpen(false)}
                                             >

@@ -5,8 +5,11 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { CalendarIcon, Clock, MapPin, User, Mail, Phone } from "lucide-react";
+import { CalendarIcon, MapPin, User, Mail, Phone } from "lucide-react";
 import { getBrandName } from "@/lib/booking-utils";
+import { useAuth } from "@/hooks/auth/use-auth";
+import { useState } from "react";
+import AuthDialog from "@/components/auth/auth-dialog";
 import type { BookingFormData } from "../../booking-form";
 import type { Motorbike } from "@/types";
 
@@ -14,7 +17,7 @@ interface BookingSummaryStepProps {
     formData: BookingFormData;
     motorbike: Motorbike;
     onBack: () => void;
-    onSubmit: () => void;
+    onSubmit: (userId?: string) => void;
 }
 
 export function BookingSummaryStep({
@@ -23,7 +26,14 @@ export function BookingSummaryStep({
     onBack,
     onSubmit,
 }: BookingSummaryStepProps) {
+    const { user } = useAuth();
     const brandName = getBrandName(motorbike);
+
+    // State สำหรับควบคุม AuthDialog
+    const [authDialogOpen, setAuthDialogOpen] = useState(false);
+    const [authDialogMode, setAuthDialogMode] = useState<"signin" | "signup">(
+        "signin"
+    );
 
     const imageUrl = motorbike?.image
         ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${motorbike.image.replace(
@@ -32,7 +42,6 @@ export function BookingSummaryStep({
           )}`
         : "/placeholder.svg?height=200&width=300";
 
-    // Get location labels
     const getLocationLabel = (value: string) => {
         const locations = {
             "Main Office": "Main Office - 123 Motorbike St.",
@@ -42,8 +51,40 @@ export function BookingSummaryStep({
         return locations[value as keyof typeof locations] || value;
     };
 
+    const openAuthDialog = (mode: "signin" | "signup") => {
+        setAuthDialogMode(mode);
+        setAuthDialogOpen(true);
+    };
+
+    const closeAuthDialog = () => {
+        setAuthDialogOpen(false);
+    };
+
+    const handleConfirm = () => {
+        if (!user) {
+            openAuthDialog("signin"); // เปิด dialog ถ้าไม่ได้ login
+            return;
+        }
+        onSubmit(user.id); // ส่ง userId ไปถ้า login แล้ว
+    };
+
     return (
         <div className="space-y-6">
+            {!user && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
+                    <p className="text-yellow-700">
+                        Please sign in to confirm your booking.{" "}
+                        <button
+                            onClick={() => openAuthDialog("signin")}
+                            className="text-gray-700 hover:text-blue-600 font-medium transition-colors inline-flex items-center"
+                        >
+                            <User size={18} className="mr-1" />
+                            Sign In
+                        </button>
+                    </p>
+                </div>
+            )}
+
             <Card className="overflow-hidden">
                 <div className="relative h-40 w-full">
                     <Image
@@ -69,7 +110,6 @@ export function BookingSummaryStep({
                         <h3 className="font-semibold text-lg">
                             Booking Details
                         </h3>
-
                         <div className="flex items-start">
                             <CalendarIcon className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
                             <div>
@@ -83,7 +123,6 @@ export function BookingSummaryStep({
                                 </p>
                             </div>
                         </div>
-
                         <div className="flex items-start">
                             <MapPin className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
                             <div>
@@ -93,7 +132,6 @@ export function BookingSummaryStep({
                                 </p>
                             </div>
                         </div>
-
                         {formData.pickupLocation !==
                             formData.dropoffLocation && (
                             <div className="flex items-start">
@@ -118,7 +156,6 @@ export function BookingSummaryStep({
                         <h3 className="font-semibold text-lg">
                             Personal Information
                         </h3>
-
                         <div className="flex items-start">
                             <User className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
                             <div>
@@ -128,7 +165,6 @@ export function BookingSummaryStep({
                                 </p>
                             </div>
                         </div>
-
                         <div className="flex items-start">
                             <Mail className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
                             <div>
@@ -138,7 +174,6 @@ export function BookingSummaryStep({
                                 </p>
                             </div>
                         </div>
-
                         <div className="flex items-start">
                             <Phone className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
                             <div>
@@ -157,7 +192,6 @@ export function BookingSummaryStep({
                     <h3 className="font-semibold text-lg mb-4">
                         Price Summary
                     </h3>
-
                     <div className="space-y-2">
                         <div className="flex justify-between">
                             <span className="text-gray-600">Daily Rate:</span>
@@ -197,8 +231,17 @@ export function BookingSummaryStep({
                 <Button type="button" variant="outline" onClick={onBack}>
                     Back
                 </Button>
-                <Button onClick={onSubmit}>Confirm Booking</Button>
+                <Button onClick={handleConfirm} disabled={!user}>
+                    Confirm Booking
+                </Button>
             </div>
+
+            {/* เพิ่ม AuthDialog */}
+            <AuthDialog
+                isOpen={authDialogOpen}
+                onClose={closeAuthDialog}
+                initialMode={authDialogMode}
+            />
         </div>
     );
 }

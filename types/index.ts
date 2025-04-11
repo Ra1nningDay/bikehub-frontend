@@ -36,8 +36,8 @@ export interface BookingFormData {
     dropoffLocation: string;
     pickupDate: string;
     dropoffDate: string;
+    name: string;
     motorcycle: string;
-    fullName: string;
     email: string;
     phone: string;
     totalPrice: number;

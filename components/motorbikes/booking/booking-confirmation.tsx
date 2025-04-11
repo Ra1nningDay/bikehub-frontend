@@ -55,7 +55,7 @@ export function BookingConfirmation({
 
     const handleViewBookings = () => {
         onClose();
-        router.push("/account/bookings");
+        router.push("/account");
     };
 
     const handleCreateAccount = () => {

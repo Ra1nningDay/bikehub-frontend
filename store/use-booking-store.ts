@@ -1,5 +1,6 @@
+"use client";
+
 import { create } from "zustand";
-import axios from "axios";
 import { BookingAPI } from "@/lib/api/booking";
 import type { Booking, CreateBookingDTO } from "@/types";
 
@@ -12,7 +13,7 @@ interface BookingState {
     selectedBooking: Booking | null;
 
     // Actions
-    fetchBookings: () => Promise<void>;
+    fetchBookings: (userId?: string) => Promise<void>; // userId เป็น optional
     fetchBookingById: (id: string) => Promise<void>;
     createBooking: (data: CreateBookingDTO) => Promise<Booking>;
     resetCurrentBooking: () => void;
@@ -20,7 +21,7 @@ interface BookingState {
     setSelectedBooking: (booking: Booking | null) => void;
 }
 
-export const useBookingStore = create<BookingState>((set, get) => ({
+export const useBookingStore = create<BookingState>((set) => ({
     // Initial state
     bookings: [],
     currentBooking: null,
@@ -29,10 +30,20 @@ export const useBookingStore = create<BookingState>((set, get) => ({
     selectedBooking: null,
 
     // Actions
-    fetchBookings: async () => {
+    fetchBookings: async (userId?: string) => {
         try {
             set({ isLoading: true, error: null });
-            const bookings = await BookingAPI.getAll();
+            let bookings: Booking[];
+
+            if (userId) {
+                // ดึงการจองของ user เฉพาะเมื่อมี userId
+                bookings = await BookingAPI.getByUserId(userId);
+                console.log(bookings);
+            } else {
+                // ดึงการจองทั้งหมดเมื่อไม่มี userId (กรณี admin)
+                bookings = await BookingAPI.getAll();
+            }
+
             set({ bookings, isLoading: false });
         } catch (error) {
             set({
@@ -65,7 +76,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
         try {
             set({ isLoading: true, error: null });
             const newBooking = await BookingAPI.create(data);
-            console.log("New booking created:", newBooking); // Log ข้อมูลของการจองใหม่
+            console.log("New booking created:", newBooking);
             set((state) => ({
                 bookings: [...state.bookings, newBooking],
                 currentBooking: newBooking,
@@ -87,11 +98,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
 
     setSelectedBooking: (booking) => set({ selectedBooking: booking }),
 
-    resetCurrentBooking: () => {
-        set({ currentBooking: null });
-    },
+    resetCurrentBooking: () => set({ currentBooking: null }),
 
-    resetError: () => {
-        set({ error: null });
-    },
+    resetError: () => set({ error: null }),
 }));

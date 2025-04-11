@@ -42,7 +42,7 @@ export function BookingForm({ motorbike, onClose }: BookingFormProps) {
     const [formData, setFormData] = useState<BookingFormData>({
         startDate: new Date(),
         endDate: new Date(new Date().setDate(new Date().getDate() + 3)),
-        fullName: user?.fullName || "",
+        fullName: user?.fullName || user?.name || "",
         email: user?.email || "",
         phone: user?.phone || "",
         pickupLocation: "Main Office",

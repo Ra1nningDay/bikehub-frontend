@@ -69,7 +69,7 @@ export function BookingCard({
         if (booking.motorbike?.image) {
             return `${
                 process.env.NEXT_PUBLIC_API_URL
-            }/uploads/${booking.motorbike.image.replace(/\\/g, "/")}`;
+            }/${booking.motorbike.image.replace(/\\/g, "/")}`;
         }
         return "/placeholder.svg?height=100&width=150";
     };
@@ -115,7 +115,7 @@ export function BookingCard({
                             <div className="flex items-center mt-2 md:mt-0">
                                 <DollarSign className="h-5 w-5 text-green-600" />
                                 <span className="font-bold text-lg">
-                                    ${booking.total_price.toFixed(2)}
+                                    {booking.total_price.toFixed(2)}
                                 </span>
                             </div>
                         </div>
@@ -141,30 +141,6 @@ export function BookingCard({
                                     </p>
                                     <p className="font-medium">
                                         {formatDate(booking.dropoff_date)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-2">
-                                <Clock className="h-5 w-5 text-gray-500 mt-0.5" />
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Pickup Time
-                                    </p>
-                                    <p className="font-medium">
-                                        {formatTime(booking.pickup_date)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-2">
-                                <MapPin className="h-5 w-5 text-gray-500 mt-0.5" />
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Pickup Location
-                                    </p>
-                                    <p className="font-medium">
-                                        {booking.pickup_location}
                                     </p>
                                 </div>
                             </div>
