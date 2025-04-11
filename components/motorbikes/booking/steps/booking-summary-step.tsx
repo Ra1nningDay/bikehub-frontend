@@ -288,7 +288,7 @@ export function BookingSummaryStep({
                                 </p>
                                 <div className="relative h-32 w-32">
                                     <Image
-                                        src="/placeholder-qr-code.png"
+                                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/220px-QR_code_for_mobile_English_Wikipedia.svg.png"
                                         alt="QR Code for Payment"
                                         fill
                                         className="object-contain"
