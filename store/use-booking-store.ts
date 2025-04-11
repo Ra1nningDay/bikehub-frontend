@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { BookingAPI } from "@/lib/api/booking";
-import type { Booking, CreateBookingDTO } from "@/types";
+import type { Booking, CreatePaymentDTO } from "@/types";
 
 interface BookingState {
     // Data state
@@ -15,7 +15,7 @@ interface BookingState {
     // Actions
     fetchBookings: (userId?: string) => Promise<void>; // userId เป็น optional
     fetchBookingById: (id: string) => Promise<void>;
-    createBooking: (data: CreateBookingDTO) => Promise<Booking>;
+    createBooking: (data: CreatePaymentDTO) => Promise<Booking>;
     resetCurrentBooking: () => void;
     resetError: () => void;
     setSelectedBooking: (booking: Booking | null) => void;
@@ -72,11 +72,11 @@ export const useBookingStore = create<BookingState>((set) => ({
         }
     },
 
-    createBooking: async (data: CreateBookingDTO) => {
+    createBooking: async (data: CreatePaymentDTO) => {
         try {
             set({ isLoading: true, error: null });
             const newBooking = await BookingAPI.create(data);
-            console.log("New booking created:", newBooking);
+            // console.log("New booking created:", newBooking);
             set((state) => ({
                 bookings: [...state.bookings, newBooking],
                 currentBooking: newBooking,

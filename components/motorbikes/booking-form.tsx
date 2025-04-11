@@ -14,6 +14,7 @@ import { BookingPersonalStep } from "./booking/steps/booking-personal-step";
 import { BookingSummaryStep } from "./booking/steps/booking-summary-step";
 import { BookingConfirmation } from "./booking/booking-confirmation";
 import { BookingStepper } from "./booking/booking-stepper";
+import { CreateBookingDTO } from "@/types";
 
 export interface BookingFormData {
     startDate: Date;
@@ -46,10 +47,15 @@ export function BookingForm({ motorbike, onClose }: BookingFormProps) {
         email: user?.email || "",
         phone: user?.phone || "",
         pickupLocation: "Main Office",
-        dropoffLocation: "Main Office", // Default to same location
+        dropoffLocation: "Main Office",
         totalPrice: 0,
         days: 3,
     });
+    // เพิ่ม state สำหรับ paymentMethod และ paymentProof
+    const [paymentMethod, setPaymentMethod] = useState<
+        "qr" | "credit" | "bank"
+    >("qr");
+    const [paymentProof, setPaymentProof] = useState<File | null>(null);
 
     const steps = [
         { title: "Dates", description: "Select booking dates" },
@@ -67,57 +73,117 @@ export function BookingForm({ motorbike, onClose }: BookingFormProps) {
 
     const updateFormData = useCallback((data: Partial<BookingFormData>) => {
         setFormData((prev) => {
-            // Check if any values are actually changing
             const hasChanges = Object.entries(data).some(
                 ([key, value]) => prev[key as keyof BookingFormData] !== value
             );
-
-            // Only update state if something is actually changing
             return hasChanges ? { ...prev, ...data } : prev;
         });
     }, []);
 
     const handleSubmit = async () => {
         try {
-            // แปลงวันที่เป็น Date object
-            const pickupDateTime = new Date(formData.startDate); // ใช้แค่วันที่
-            const dropoffDateTime = new Date(formData.endDate); // ใช้แค่วันที่
+            // ตรวจสอบว่า user ได้ทำการ login หรือยัง
+            if (!user) {
+                toast({
+                    title: "Authentication Required",
+                    description: "Please sign in to confirm your booking.",
+                    variant: "destructive",
+                });
+                return;
+            }
 
-            // แปลงเป็นรูปแบบ ISO 8601 (รวมเวลา) โดยการเพิ่มเวลา 00:00:00
-            const formattedPickupDate = pickupDateTime.toISOString(); // จะได้ "2025-04-10T00:00:00.000Z"
-            const formattedDropoffDate = dropoffDateTime.toISOString(); // จะได้ "2025-04-13T00:00:00.000Z"
+            // ตรวจสอบว่า paymentProof ถูกอัปโหลดหรือยัง (กรณีที่ใช้ QR payment)
+            if (paymentMethod === "qr" && !paymentProof) {
+                toast({
+                    title: "Payment Proof Required",
+                    description:
+                        "Please upload payment proof for QR code payment.",
+                    variant: "destructive",
+                });
+                return;
+            }
 
-            // Map form data to the DTO structure required by the backend
-            const bookingDTO = {
-                user_id: user?.id ? Number.parseInt(user.id) : 0,
-                motorbike_id: motorbike.id,
+            // ตรวจสอบว่า formData มีข้อมูลที่จำเป็นหรือไม่
+            if (
+                !formData.pickupLocation ||
+                !formData.dropoffLocation ||
+                !formData.totalPrice
+            ) {
+                toast({
+                    title: "Missing Information",
+                    description:
+                        "Please make sure all required fields are filled in.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            // ตรวจสอบวันที่ pickupDate และ dropoffDate ว่าเป็น Date instance หรือไม่
+            const pickupDateTime = new Date(formData.startDate);
+            const dropoffDateTime = new Date(formData.endDate);
+
+            // ตรวจสอบว่าเป็นวันที่ถูกต้องหรือไม่
+            if (
+                isNaN(pickupDateTime.getTime()) ||
+                isNaN(dropoffDateTime.getTime())
+            ) {
+                toast({
+                    title: "Invalid Dates",
+                    description:
+                        "Please provide valid dates for pickup and dropoff.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            // เตรียมข้อมูลที่จะส่ง
+            const dataToSend: CreateBookingDTO = {
+                user_id: Number(user.id), // user_id
+                motorbike_id: Number(motorbike.id), // motorbike_id
                 pickup_location:
-                    formData.pickupLocation || "Default Pickup Location",
+                    formData.pickupLocation || "Default Pickup Location", // pickup_location
                 dropoff_location:
-                    formData.dropoffLocation || formData.pickupLocation,
-                pickup_date: formattedPickupDate, // ส่งเป็น ISO 8601 ที่มีเวลา
-                dropoff_date: formattedDropoffDate, // ส่งเป็น ISO 8601 ที่มีเวลา
-                total_price: Number(formData.totalPrice),
+                    formData.dropoffLocation || formData.pickupLocation, // dropoff_location
+                pickup_date: pickupDateTime.toISOString(), // ✅ ส่งเป็น ISO string
+                dropoff_date: dropoffDateTime.toISOString(), // ✅ ส่งเป็น ISO string
+                amount: formData.totalPrice, // amount (amount ที่ต้องจ่าย)
+                total_price: formData.totalPrice, // total_price
+                paymentMethod: paymentMethod, // paymentMethod
+                paymentProof: paymentProof ?? null, // paymentProof (null ถ้าไม่มี)
             };
 
-            // ใช้ฟังก์ชัน createBooking เพื่อสร้างการจอง
-            const response = await createBooking(bookingDTO);
+            // เรียกใช้ฟังก์ชันสร้าง booking
+            const result = await createBooking(dataToSend);
 
-            setBookingId(response.id);
+            // ตั้งค่าการจองที่เสร็จสมบูรณ์
+            setBookingId(result.id);
             setBookingComplete(true);
 
+            // แสดงข้อความเมื่อการจองสำเร็จ
             toast({
                 title: "Booking Successful",
-                description: `Your booking has been confirmed with ID: ${response.id}`,
+                description: `Your booking has been confirmed with ID: ${result.id}`,
             });
-        } catch (error) {
+        } catch (error: any) {
+            // แสดงข้อความเมื่อเกิดข้อผิดพลาดในการจอง
             toast({
                 title: "Booking Failed",
                 description:
+                    error.message ||
                     "There was an error processing your booking. Please try again.",
                 variant: "destructive",
             });
         }
+    };
+
+    // เพิ่ม callback เพื่อรับ paymentMethod และ paymentProof จาก BookingSummaryStep
+    const handleSummarySubmit = (
+        paymentMethod: "qr" | "credit" | "bank",
+        paymentProof: File | null
+    ) => {
+        setPaymentMethod(paymentMethod);
+        setPaymentProof(paymentProof);
+        handleSubmit();
     };
 
     const modalVariants = {
@@ -189,7 +255,7 @@ export function BookingForm({ motorbike, onClose }: BookingFormProps) {
                                             formData={formData}
                                             motorbike={motorbike}
                                             onBack={handleBack}
-                                            onSubmit={handleSubmit}
+                                            onSubmit={handleSummarySubmit} // เปลี่ยน onSubmit เพื่อส่ง paymentMethod และ paymentProof
                                         />
                                     )}
                                 </div>

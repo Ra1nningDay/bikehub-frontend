@@ -19,7 +19,6 @@ export function useBooking() {
 
     const handleCreateBooking = useCallback(
         async (bookingData: CreateBookingDTO) => {
-            console.log("Booking data being sent:", bookingData); // Log ข้อมูลที่ส่งไป
             try {
                 const newBooking = await createBooking(bookingData);
                 return newBooking;

@@ -9,6 +9,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -47,20 +48,23 @@ export function BookingHistory({ userId }: BookingHistoryProps) {
     }, [userId, fetchBookings]);
 
     useEffect(() => {
-        // ตรวจสอบว่า bookings เป็น array ก่อนใช้งาน
         if (Array.isArray(bookings)) {
             let filtered = [...bookings];
-
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
-                filtered = filtered.filter(
-                    (booking) =>
-                        booking.motorbike?.name.toLowerCase().includes(query) ||
-                        booking.pickup_location.toLowerCase().includes(query) ||
-                        booking.id.toLowerCase().includes(query)
-                );
+                filtered = filtered.filter((booking) => {
+                    const bookingId = String(booking.id || "").toLowerCase();
+                    return (
+                        booking.motorbike?.name
+                            ?.toLowerCase()
+                            .includes(query) ||
+                        booking.pickup_location
+                            ?.toLowerCase()
+                            .includes(query) ||
+                        bookingId.includes(query)
+                    );
+                });
             }
-
             filtered.sort((a, b) => {
                 switch (sortOption) {
                     case "newest":
@@ -81,10 +85,8 @@ export function BookingHistory({ userId }: BookingHistoryProps) {
                         return 0;
                 }
             });
-
             setFilteredBookings(filtered);
         } else {
-            // ถ้า bookings ไม่ใช่ array ให้ตั้งค่า filteredBookings เป็น array ว่าง
             setFilteredBookings([]);
         }
     }, [bookings, searchQuery, sortOption]);
@@ -119,6 +121,37 @@ export function BookingHistory({ userId }: BookingHistoryProps) {
         );
     };
 
+    // Search และ Sort UI
+    const searchSortUI = (
+        <div className="flex flex-col md:flex-row gap-4 justify-between">
+            <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                    placeholder="Search bookings..."
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
+
+            <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="w-full md:w-48">
+                    <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                    <SelectItem value="price-high-low">
+                        Price: High to Low
+                    </SelectItem>
+                    <SelectItem value="price-low-high">
+                        Price: Low to High
+                    </SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+    );
+
     if (!userId) {
         return (
             <Alert variant="destructive">
@@ -149,68 +182,81 @@ export function BookingHistory({ userId }: BookingHistoryProps) {
         );
     }
 
-    if (filteredBookings.length === 0) {
-        return (
-            <div className="bg-white rounded-lg shadow p-8 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">
-                    No Bookings Found
-                </h3>
-                <p className="text-gray-500 mb-6">
-                    You haven't made any bookings yet.
-                </p>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
-                <div className="relative w-full md:w-64">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                        placeholder="Search bookings..."
-                        className="pl-10"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+            {searchSortUI} {/* แสดง Search และ Sort เสมอ */}
+            {filteredBookings.length === 0 ? (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Search className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">
+                        No Bookings Found
+                    </h3>
+                    <p className="text-gray-500 mb-6">
+                        You haven't made any bookings yet or no results match
+                        your search.
+                    </p>
                 </div>
-                <Select value={sortOption} onValueChange={setSortOption}>
-                    <SelectTrigger className="w-full md:w-48">
-                        <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="newest">Newest First</SelectItem>
-                        <SelectItem value="oldest">Oldest First</SelectItem>
-                        <SelectItem value="price-high-low">
-                            Price: High to Low
-                        </SelectItem>
-                        <SelectItem value="price-low-high">
-                            Price: Low to High
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+            ) : (
+                <Tabs defaultValue="upcoming" className="w-full">
+                    <TabsList className="mb-6">
+                        <TabsTrigger value="upcoming">
+                            Upcoming Bookings
+                        </TabsTrigger>
+                        <TabsTrigger value="past">Past Bookings</TabsTrigger>
+                        <TabsTrigger value="all">All Bookings</TabsTrigger>
+                    </TabsList>
 
-            <Tabs defaultValue="upcoming" className="w-full">
-                <TabsList className="mb-6">
-                    <TabsTrigger value="upcoming">
-                        Upcoming Bookings
-                    </TabsTrigger>
-                    <TabsTrigger value="past">Past Bookings</TabsTrigger>
-                    <TabsTrigger value="all">All Bookings</TabsTrigger>
-                </TabsList>
+                    <TabsContent value="upcoming">
+                        <div className="space-y-4">
+                            {getUpcomingBookings().length === 0 ? (
+                                <p className="text-center py-8 text-gray-500">
+                                    No upcoming bookings found.
+                                </p>
+                            ) : (
+                                getUpcomingBookings().map((booking) => (
+                                    <BookingCard
+                                        key={booking.id}
+                                        booking={booking}
+                                        onViewDetails={() =>
+                                            handleOpenDetails(booking)
+                                        }
+                                        onCancelBooking={() =>
+                                            handleCancelBooking(booking)
+                                        }
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </TabsContent>
 
-                <TabsContent value="upcoming">
-                    <div className="space-y-4">
-                        {getUpcomingBookings().length === 0 ? (
-                            <p className="text-center py-8 text-gray-500">
-                                No upcoming bookings found.
-                            </p>
-                        ) : (
-                            getUpcomingBookings().map((booking) => (
+                    <TabsContent value="past">
+                        <div className="space-y-4">
+                            {getPastBookings().length === 0 ? (
+                                <p className="text-center py-8 text-gray-500">
+                                    No past bookings found.
+                                </p>
+                            ) : (
+                                getPastBookings().map((booking) => (
+                                    <BookingCard
+                                        key={booking.id}
+                                        booking={booking}
+                                        onViewDetails={() =>
+                                            handleOpenDetails(booking)
+                                        }
+                                        onCancelBooking={() =>
+                                            handleCancelBooking(booking)
+                                        }
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="all">
+                        <div className="space-y-4">
+                            {filteredBookings.map((booking) => (
                                 <BookingCard
                                     key={booking.id}
                                     booking={booking}
@@ -221,50 +267,11 @@ export function BookingHistory({ userId }: BookingHistoryProps) {
                                         handleCancelBooking(booking)
                                     }
                                 />
-                            ))
-                        )}
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="past">
-                    <div className="space-y-4">
-                        {getPastBookings().length === 0 ? (
-                            <p className="text-center py-8 text-gray-500">
-                                No past bookings found.
-                            </p>
-                        ) : (
-                            getPastBookings().map((booking) => (
-                                <BookingCard
-                                    key={booking.id}
-                                    booking={booking}
-                                    onViewDetails={() =>
-                                        handleOpenDetails(booking)
-                                    }
-                                    onCancelBooking={() =>
-                                        handleCancelBooking(booking)
-                                    }
-                                />
-                            ))
-                        )}
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="all">
-                    <div className="space-y-4">
-                        {filteredBookings.map((booking) => (
-                            <BookingCard
-                                key={booking.id}
-                                booking={booking}
-                                onViewDetails={() => handleOpenDetails(booking)}
-                                onCancelBooking={() =>
-                                    handleCancelBooking(booking)
-                                }
-                            />
-                        ))}
-                    </div>
-                </TabsContent>
-            </Tabs>
-
+                            ))}
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            )}
             {selectedBooking && (
                 <BookingDetailsModal
                     booking={selectedBooking}
@@ -272,7 +279,6 @@ export function BookingHistory({ userId }: BookingHistoryProps) {
                     onCancel={handleCancelBooking}
                 />
             )}
-
             {bookingToCancel && (
                 <CancelBookingDialog
                     booking={bookingToCancel}

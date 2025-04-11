@@ -52,16 +52,32 @@ export const BookingAPI = {
      * Create a new booking
      */
     create: async (bookingData: CreateBookingDTO): Promise<Booking> => {
-        console.log(bookingData); // ตรวจสอบข้อมูลที่ส่งไป
         try {
-            const response = await axios.post(
-                `${API_URL}/bookings`,
-                bookingData
-            );
+            const formData = new FormData();
+
+            formData.append("user_id", String(bookingData.user_id));
+            formData.append("motorbike_id", String(bookingData.motorbike_id));
+            formData.append("pickup_location", bookingData.pickup_location);
+            formData.append("dropoff_location", bookingData.dropoff_location);
+            formData.append("pickup_date", bookingData.pickup_date);
+            formData.append("dropoff_date", bookingData.dropoff_date);
+            formData.append("amount", String(bookingData.amount));
+            formData.append("total_price", String(bookingData.total_price));
+            formData.append("paymentMethod", bookingData.paymentMethod);
+
+            if (bookingData.paymentProof) {
+                formData.append("paymentProof", bookingData.paymentProof); // 👈 แนบไฟล์ตรงนี้
+            }
+
+            const response = await axios.post(`${API_URL}/payments`, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                // แสดงรายละเอียดข้อผิดพลาดจาก API
                 console.error("Error creating booking:", error.response?.data);
             } else {
                 console.error("Unknown error:", error);

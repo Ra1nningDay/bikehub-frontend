@@ -157,11 +157,19 @@ export default function Home() {
                     </motion.div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {popularMotorbikes.map((motorbike) => (
-                            <MotorbikeCard
+                        {popularMotorbikes.map((motorbike, index) => (
+                            <motion.div
                                 key={motorbike.id}
-                                motorbike={motorbike}
-                            />
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{
+                                    duration: 0.5,
+                                    delay: index * 0.1,
+                                }}
+                            >
+                                <MotorbikeCard motorbike={motorbike} />
+                            </motion.div>
                         ))}
                     </div>
 
